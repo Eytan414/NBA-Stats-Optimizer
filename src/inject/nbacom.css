@@ -46,10 +46,6 @@ td a span {
     font-size: 11px;
     font-weight: bold;
 }
-/* subtle highlight ast */
-table tbody tr td:nth-child(15){
-    background-color: #ffffff08;
-}
 
 #btns-wrapper{
     width: 120px;
@@ -98,9 +94,6 @@ table tbody tr td:nth-child(15){
 #btns-wrapper span:hover{
     transform: scale(1.2);
 }
-/* #btns-wrapper span:nth-child(3) i:hover{
-    transform: scale(1.5);
-} */
 #btns-wrapper .action-btns{
     display: flex;
     justify-content: space-around;
@@ -111,9 +104,6 @@ table tbody tr td:nth-child(15){
 #btns-wrapper .beautify:hover{
     filter: drop-shadow(0 0 6px gold);
 }
-/* #btns-wrapper .beautify:hover{
-    transform: scale(1.1);
-} */
 
 thead th:before{
     content: '';

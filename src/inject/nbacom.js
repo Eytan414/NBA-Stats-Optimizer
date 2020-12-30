@@ -257,14 +257,6 @@ function extractTeamStatCss(value, bad, nice, great){
 	return cssObj;
 }
 
-function getCol(matrix, col){
-	let column = [];
-	for(let i=0; i<matrix.length; i++){
-	   column.push(matrix[i][col]);
-	}
-	return column;
- }
-
 function cssBatchExecutor(matrix, columnsArr, homeAwayIdentifier, cssObj){
 	let playerIndexesToHighlight = [];
 
@@ -286,8 +278,8 @@ function cssExecutor(column, playerIndexesArray, homeAwayIdentifier, cssObj){
 	}
 }
 
-function getMaxIndexesInCategory(mat, col, homeAwayIdentifier) {
-	let columnArray = getCol(mat, col);
+function getMaxIndexesInCategory(matrix, col, homeAwayIdentifier) {
+	let columnArray = getCol(matrix, col);
 	let maxArr = [];
 	let max = Math.max(...columnArray);
 	if(max === 100) //if scored 100% - gold respective cell and update array so it won't affect "regular" highlighting
@@ -316,6 +308,37 @@ function goldAll100s(col, columnArray, homeAwayIdentifier) {
 	return columnArray;
 }
 
+
+function findWorstPercent(matrix, columnIndex){
+	//$($('table tbody')[homeAwayIdentifier]).find('tr td:nth-child(' + columnIndex + ')');
+	let statPercent = getCol(matrix, columnIndex);
+	let statAttempts = getCol(matrix, columnIndex-1);
+	let eligibleIndexes = [];
+	let playerIndexesArray = [];
+
+	for (let i = 0; i < statAttempts.length; i++) { //shame o-fer with red color. min 2 shots
+		const attempts = statAttempts[i];
+		if(attempts > 1) eligibleIndexes.push(i);
+	}
+	cssExecutor(statPercent, playerIndexesArray,)
+	for (const i of eligibleIndexes) {
+	}
+
+	for (let i = 0; i < eligibleIndexes.length; i++) {
+		const curIndex = eligibleIndexes[i];
+		if(statPercent[i] == 0)
+		eligibleIndexes.push(i);
+	}	
+}
+
+function getCol(matrix, col){
+	let column = [];
+	for(let i=0; i<matrix.length; i++){
+	   column.push(matrix[i][col]);
+	}
+	return column;
+ }
+
 function fixHeaders(homeAwayIdentifier){ 
 	let cols = $('thead th');
 	$(`body`).prepend(`<div id="` + homeAwayIdentifier + `-headers-wrapper" 
@@ -327,15 +350,18 @@ function fixHeaders(homeAwayIdentifier){
 		const cur = cols[i];
 		let text = $(cur).text();	
 		let bgColor = $(cur).css('background-color');
-		let width = $(cur).width();
-		let height = $(cur).height();
+		let width = $(cur).css('width');
+		let height = $(cur).css('height');
+		// let width = $(cur).width();
+		// let height = $(cur).height();
 		let left = $(cur).offset().left;
 		let fSize = $(cur).css('font-size');
+		
 		let css = `
 			position: absolute;			
 			left: ` + left + `px;
-			width: ` + width + `px;
-			height: ` + height + `px;
+			width: ` + width + `;
+			height: ` + height + `;
 			padding: 15px 0 0 0;
 			background-color: ` + bgColor + `;
 			z-index: 99;
@@ -350,7 +376,7 @@ function fixHeaders(homeAwayIdentifier){
 
 		$('#' + homeAwayIdentifier + '-headers-wrapper').append(`
 			<div class="col` + i + `">			
-				<span class="colhead` + i + `"></span>
+				<span class="colhead` + i + `" style='width: 100%;'></span>
 			</div>`);	
 		
 			$('head').prepend(`
@@ -360,6 +386,7 @@ function fixHeaders(homeAwayIdentifier){
 			</style>`);
 							
 		$('.colhead' + i).text(text);
+		// $('#' + homeAwayIdentifier + '-headers-wrapper').css('background-color',bgColor);
 		$('#' + homeAwayIdentifier + '-headers-wrapper').hide();
 	}
 }
