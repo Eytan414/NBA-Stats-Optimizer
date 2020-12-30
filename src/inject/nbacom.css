@@ -1,0 +1,121 @@
+body{
+    --icon-color:#444;
+    --font-color:#a0a0a0;
+    --highlight-color:#555;
+    --nba-red:#c9082a;
+    --nba-blue:#17408B;
+}
+
+td,
+table td a span {
+    font-family: sans-serif;
+}
+
+body table tbody tr td.myHighlight{
+    background-color: var(--highlight-color);
+}
+a.text-cerulean {
+    color: var(--font-color);
+	text-decoration: underline;
+}
+.fixed>:nth-child(3){
+	display:none;
+}
+
+table th, table td {
+    text-align: center !important;
+}
+table td:first-child,
+table th:first-child {
+	width: 130px !important;
+}
+
+table thead {
+	overflow: hidden;
+    height: 40px;
+}
+table thead tr{
+	height: 40px;
+}
+section .relative > .block > div{
+	max-height: 1000px;
+}
+
+td a span {
+    font-size: 11px;
+    font-weight: bold;
+}
+/* subtle highlight ast */
+table tbody tr td:nth-child(15){
+    background-color: #ffffff08;
+}
+
+#btns-wrapper{
+    width: 120px;
+    height: 100px;
+    font-size: 15px;
+    font-weight: bold;
+    background: var(--nba-blue);
+    color: #a2a2a2;
+    border: 2px dashed var(--nba-red);
+    border-bottom: 0;
+    border-radius: 10px 10px 0 0;
+    padding: 5px 10px;
+    position: fixed;
+    z-index: 10;
+    bottom: 0;
+    right: 15px;
+    cursor: pointer;
+}
+
+#btns-wrapper hr{
+    color: var(--nba-red);
+    margin: 10px 0;
+}
+#btns-wrapper .beautify{
+    top: 0px;
+    position: relative;
+}
+#btns-wrapper .toggle-headers{
+    transform: rotate(270deg);
+    color: #a2a2a2;
+}
+#btns-wrapper .beautify span{
+    top: 5px;
+    position: relative;
+}
+
+#btns-wrapper img{
+    width: 20px;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+#btns-wrapper i.dark-mode{
+    color: var(--icon-color);
+}
+#btns-wrapper span:hover{
+    transform: scale(1.2);
+}
+/* #btns-wrapper span:nth-child(3) i:hover{
+    transform: scale(1.5);
+} */
+#btns-wrapper .action-btns{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    font-size: 10px;
+}
+#btns-wrapper .action-btns span:hover,
+#btns-wrapper .beautify:hover{
+    filter: drop-shadow(0 0 6px gold);
+}
+/* #btns-wrapper .beautify:hover{
+    transform: scale(1.1);
+} */
+
+thead th:before{
+    content: '';
+    width: 10px;
+    height: 10px;
+}
