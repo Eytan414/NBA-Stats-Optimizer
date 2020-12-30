@@ -19,12 +19,13 @@ const colMap = {
 	'BLK' : '14',	'TO'  : '15',
 	'PF'  : '16',	'PTS' : '17',
 	'+/-' : '18'};
-const OFFSET = 3; //compensation for the removed name+min's col's 
+const OFFSET = 3; //compensation for the removed name+min's col's + 1 due to arr begins with 0
 const AWAY = 0; const HOME = 1;
-let isDarkMode = true; //default
-let isAwayToggleHeadersOn = false; //default off
-let isHomeToggleHeadersOn = false; //default off
+let isDarkMode = true;
+let isAwayToggleHeadersOn = false; 
+let isHomeToggleHeadersOn = false;
 let _url;
+
 function implHighlight() {
 	$('body').on({
 		mouseenter: function () {
@@ -107,7 +108,7 @@ function adjustDOM() {
 		if(isDarkMode){
 			$('body')[0].style.setProperty('--highlight-color', '#555');
 			$('body')[0].style.setProperty('--font-color', '#a0a0a0');
-			$('body')[0].style.setProperty('--icon-color', '#444'); //nba's Cornflower Blue
+			$('body')[0].style.setProperty('--icon-color', '#444'); 
 		} else{
 			$('body')[0].style.setProperty('--highlight-color', '#eee');
 			$('body')[0].style.setProperty('--font-color', '#000');
@@ -135,11 +136,11 @@ function adjustDOM() {
 }
 
 function populateMatrix(tableObj) {
-	let tmpMatrix = [];
+	let playerStatline = [];
 	let matrixToReturn = [];
 
 	$(tableObj).find('tr').each((i, currentRow) => {
-		tmpMatrix = $(currentRow).find('td').map((i, el) => {
+		playerStatline = $(currentRow).find('td').map((i, el) => {
 			if (i < 2){
 				if(i === 0) //do not insert name to matrix 
 					return;
@@ -152,29 +153,57 @@ function populateMatrix(tableObj) {
 			} else
 				return +($(el).text());
 		});
-		if (tmpMatrix.length > 0) matrixToReturn.push(tmpMatrix);
+		if (playerStatline.length > 0) matrixToReturn.push(playerStatline);
 	});
 	return matrixToReturn;
 }
 
-function extractTeamStatCss(value, bad, nice, great){
-	let cssObj = {};
-	if(value <= bad)
-		cssObj['color'] = '#5d7eff'; //ice cold
-	else
-		cssObj['color'] = 'var(--font-color)';
+function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
+	let colsToCss = ['3P%','FG%','FT%','AST','FGM','3PM','FTM','STL','REB','BLK'];
+	const bestInCategoryCss = { 'font-weight': 'bold', 'color': 'green' };
+	const noteworthyCss = { 'font-weight': 'bold', 'font-size': '15px' };
+	const bestCss = { 'background-color': 'rgba(0, 255, 0, .15)', 'font-weight': 'bold', 'color': 'green', 'font-size': '17px' };
+	const worstCss = { 'font-weight': 'bold', 'font-size': '18px', 'color':'red' };
+	let teamRow = $($('table tbody')[homeAwayIdentifier]).find('tr:last-child td');
 	
-	if(value >= nice){
-		cssObj['font-weight'] = 'bold'; 
-		cssObj['font-size'] =  '17px'; 
+	cssBatchExecutor(matrix, colsToCss, homeAwayIdentifier, bestInCategoryCss);
+	teamStatWizardry(teamStatsArray, teamRow);
+
+	let playerIndexesToHighlight = [];
+	//highlight double figure scorers 	
+	let columnArray = getCol(matrix, colMap['PTS']);
+	for(let i = 0 ; i < columnArray.length ; i++){
+		if(columnArray[i] > 9)	
+			playerIndexesToHighlight.push(i+1);
 	}
-	if(value >= great)
-		cssObj['color'] = 'green';
-		
-	if(value === 100)
-		cssObj['color'] = 'gold';
+	cssExecutor(colMap['PTS'], playerIndexesToHighlight, homeAwayIdentifier, noteworthyCss);
 	
-	return cssObj;
+	//highlight best scorer/s
+	playerIndexesToHighlight = getMaxIndexesInCategory(matrix, colMap['PTS'], homeAwayIdentifier);
+	cssExecutor(colMap['PTS'], playerIndexesToHighlight, homeAwayIdentifier, bestCss);
+	
+	//highlight fouler
+	playerIndexesToHighlight = [];
+	columnArray = getCol(matrix, colMap['PF']);
+	for(let i = 0 ; i < columnArray.length ; i++){
+		if(columnArray[i] === 6)	
+			playerIndexesToHighlight.push(i+1);
+	}
+	cssExecutor(colMap['PF'], playerIndexesToHighlight, homeAwayIdentifier, worstCss);
+
+
+	//highlight TO-er
+	playerIndexesToHighlight = [];
+
+	playerIndexesToHighlight = getMaxIndexesInCategory(matrix, colMap['TO'], homeAwayIdentifier);
+	for (let i = 0 ; i < playerIndexesToHighlight.length ; i++){
+		let turnoverRow = $($('table tbody')[homeAwayIdentifier])
+							.find('tr:nth-child(' + playerIndexesToHighlight[i] + ')');
+
+		turnoverRow.find('td:nth-child(' + (+colMap['TO']+OFFSET) + ')').css(worstCss);
+		$(turnoverRow.find('td:nth-child(' + (+colMap['TO']+OFFSET) + ') a')[0]).css(worstCss);
+	}
+	
 }
 
 function teamStatWizardry(teamStatsArray, teamRow){
@@ -208,52 +237,24 @@ function teamStatWizardry(teamStatsArray, teamRow){
 	}
 }
 
-function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
-	let tmpColArr = ['3P%','FG%','FT%','AST','FGM','3PM','FTM','STL','REB','BLK'];
-	const bestInCategoryCss = { 'font-weight': 'bold', 'color': 'green' };
-	const noteworthyCss = { 'font-weight': 'bold', 'font-size': '15px' };
-	const bestCss = { 'background-color': 'rgba(0, 255, 0, .15)', 'font-weight': 'bold', 'color': 'green', 'font-size': '17px' };
-	const worstCss = { 'font-weight': 'bold', 'font-size': '18px', 'color':'red' };
-	let teamRow = $($('table tbody')[homeAwayIdentifier]).find('tr:last-child td');
+function extractTeamStatCss(value, bad, nice, great){
+	let cssObj = {};
+	if(value <= bad)
+		cssObj['color'] = '#5d7eff'; //ice cold
+	else
+		cssObj['color'] = 'var(--font-color)';
 	
-	cssBatchExecutor(matrix, tmpColArr, bestInCategoryCss, homeAwayIdentifier);
-	teamStatWizardry(teamStatsArray, teamRow);
-
-	let playerIndexesToHighlight = [];
-	//highlight double figure scorers 	
-	let columnArray = getCol(matrix, colMap['PTS']);
-	for(let i = 0 ; i < columnArray.length ; i++){
-		if(columnArray[i] > 9)	
-			playerIndexesToHighlight.push(i+1);
+	if(value >= nice){
+		cssObj['font-weight'] = 'bold'; 
+		cssObj['font-size'] =  '17px'; 
 	}
-	cssExecutor(colMap['PTS'], playerIndexesToHighlight, homeAwayIdentifier, noteworthyCss);
+	if(value >= great)
+		cssObj['color'] = 'green';
+		
+	if(value === 100)
+		cssObj['color'] = 'gold';
 	
-	//highlight best scorer/s
-	playerIndexesToHighlight = getMaxIndexesInCategory(matrix, colMap['PTS'], homeAwayIdentifier);
-	cssExecutor(colMap['PTS'], playerIndexesToHighlight, homeAwayIdentifier, bestCss);
-	
-	//highlight fouler
-	playerIndexesToHighlight = [];
-	columnArray = getCol(matrix, colMap['PF']);
-	for(let i = 0 ; i < columnArray.length ; i++){
-		if(columnArray[i] === 6)	
-			playerIndexesToHighlight.push(i+1);
-	}
-	cssExecutor(colMap['PF'], playerIndexesToHighlight, homeAwayIdentifier, worstCss);
-
-
-	//highlight TO-er
-	playerIndexesToHighlight = [];
-
-	playerIndexesToHighlight = getMaxIndexesInCategory(matrix, colMap['TO'], homeAwayIdentifier);
-	for (let i = 0 ; i < playerIndexesToHighlight.length ; i++){
-		let turnoverRow = $($('table tbody')[homeAwayIdentifier])
-							.find('tr:nth-child(' + playerIndexesToHighlight[i] + ')');
-		turnoverRow.find('td:nth-child(' + (+colMap['TO']+OFFSET) + ')')
-		.css(worstCss);
-		$(turnoverRow.find('td:nth-child(' + (+colMap['TO']+OFFSET) + ') a')[0]).css(worstCss);
-	}
-	
+	return cssObj;
 }
 
 function getCol(matrix, col){
@@ -263,6 +264,27 @@ function getCol(matrix, col){
 	}
 	return column;
  }
+
+function cssBatchExecutor(matrix, columnsArr, homeAwayIdentifier, cssObj){
+	let playerIndexesToHighlight = [];
+
+	for (let colTitle of columnsArr) {
+		playerIndexesToHighlight = getMaxIndexesInCategory(matrix, colMap[colTitle], homeAwayIdentifier);
+		cssExecutor(colMap[colTitle], playerIndexesToHighlight, homeAwayIdentifier, cssObj);
+	}
+}
+
+function cssExecutor(column, playerIndexesArray, homeAwayIdentifier, cssObj){
+	for (let i = 0 ; i < playerIndexesArray.length ; i++){
+		let table = $($('table tbody')[homeAwayIdentifier]);
+		let row = $(table).find('tr:nth-child(' + playerIndexesArray[i] + ')');
+		let col = $(row).find('td:nth-child(' + (+column+OFFSET) + ')');
+
+		col.find('a').length > 0 ?
+			col.find('a').css(cssObj) :
+			$(col).css(cssObj);
+	}
+}
 
 function getMaxIndexesInCategory(mat, col, homeAwayIdentifier) {
 	let columnArray = getCol(mat, col);
@@ -294,33 +316,12 @@ function goldAll100s(col, columnArray, homeAwayIdentifier) {
 	return columnArray;
 }
 
-function cssBatchExecutor(matrix, columnsArr, cssObj, homeAwayIdentifier){
-	let playerIndexesToHighlight = [];
-
-	for (let colTitle of columnsArr) {
-		playerIndexesToHighlight = getMaxIndexesInCategory(matrix, colMap[colTitle], homeAwayIdentifier);
-		cssExecutor(colMap[colTitle], playerIndexesToHighlight, homeAwayIdentifier, cssObj);
-	}
-}
-
-function cssExecutor(column, playerIndexesArray, homeAwayIdentifier, cssObj){
-	for (let i = 0 ; i < playerIndexesArray.length ; i++){
-		let table = $($('table tbody')[homeAwayIdentifier]);
-		let row = $(table).find('tr:nth-child(' + playerIndexesArray[i] + ')');
-		let col = $(row).find('td:nth-child(' + (+column+OFFSET) + ')');
-
-		col.find('a').length > 0 ?
-			col.find('a').css(cssObj) :
-			$(col).css(cssObj);
-	}
-}
-
 function fixHeaders(homeAwayIdentifier){ 
 	let cols = $('thead th');
 	$(`body`).prepend(`<div id="` + homeAwayIdentifier + `-headers-wrapper" 
 							style="top: 150px; position: sticky; z-index: 99;">
 						</div>`);
-	let start = homeAwayIdentifier === 'away' ? 0 :cols.length/2;
+	let start = homeAwayIdentifier === 'away' ? 0 : cols.length/2;
 	let end = homeAwayIdentifier === 'away' ? cols.length/2 : cols.length;
 	for (let i = start ; i < end; i++) {
 		const cur = cols[i];
@@ -328,7 +329,6 @@ function fixHeaders(homeAwayIdentifier){
 		let bgColor = $(cur).css('background-color');
 		let width = $(cur).width();
 		let height = $(cur).height();
-		let top = $( cols[i]).offset().top;
 		let left = $(cur).offset().left;
 		let fSize = $(cur).css('font-size');
 		let css = `
@@ -362,5 +362,4 @@ function fixHeaders(homeAwayIdentifier){
 		$('.colhead' + i).text(text);
 		$('#' + homeAwayIdentifier + '-headers-wrapper').hide();
 	}
-
 }
