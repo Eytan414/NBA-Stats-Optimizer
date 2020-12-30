@@ -8,7 +8,7 @@ chrome.extension.sendMessage({}, function (response) {
 		}
 	}, 20);
 });
-const colMap = {
+const COL_MAP = {
 	'FGM' : '0',	'FGA' : '1',
 	'FG%' : '2',	'3PM' : '3',
 	'3PA' : '4',	'3P%' : '5',
@@ -21,10 +21,8 @@ const colMap = {
 	'+/-' : '18'};
 const OFFSET = 3; //compensation for the removed name+min's col's + 1 due to arr begins with 0
 const AWAY = 0; const HOME = 1;
-let isDarkMode = true;
-let isAwayToggleHeadersOn = false; 
-let isHomeToggleHeadersOn = false;
-let _url;
+let isDarkMode = false;
+// let _url;
 
 function implHighlight() {
 	$('body').on({
@@ -57,53 +55,16 @@ function implHighlight() {
 	}, 'table tbody tr td');
 }
 
-function adjustDOM() { 
-	var url = chrome.extension.getURL('src/inject/assets/fantasy_gray.png');
+function adjustDOM() {
 	fixHeaders('away');
 	fixHeaders('home');
-
-	let magicBtn = `<div id="btns-wrapper">
-						<div class="beautify">
-							<span> Beautify </span>
-							<img class='fantasy' src="">
-						</div>
-						<hr>
-						<div class="action-btns">
-							<span>away<i class="toggle-headers material-icons away">toggle_off</i></span>
-							<span>home<i class="toggle-headers material-icons home">toggle_off</i></span>
-							<span>dark<i class="material-icons dark-mode">dark_mode</i></span>
-						</div>
-					</div>`;	
+	addScrollHandler();
 
 	let materialIconsUrl = '<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">';
 	$('head').append(materialIconsUrl);
-	$('body').prepend(magicBtn);
-	$('#btns-wrapper .fantasy').attr('src', url);
-	$('#btns-wrapper .toggle-headers.away').click(function () {
-		isAwayToggleHeadersOn = !isAwayToggleHeadersOn;
-		$('#away-headers-wrapper').toggle();
-		if(isAwayToggleHeadersOn){
-			$('#btns-wrapper .toggle-headers.away').text('toggle_on');
-			$('#btns-wrapper .toggle-headers.away').css('color', 'var(--nba-red)' );
-		}else {
-			$('#btns-wrapper .toggle-headers.away').text('toggle_off') ;
-			$('#btns-wrapper .toggle-headers.away').css('color', '#a2a2a2' );
-		}
-	});
-
-	$('#btns-wrapper .toggle-headers.home').click(function () {
-		isHomeToggleHeadersOn = !isHomeToggleHeadersOn;
-		$('#home-headers-wrapper').toggle();
-		if(isHomeToggleHeadersOn){
-			$('#btns-wrapper .toggle-headers.home').text('toggle_on');
-			$('#btns-wrapper .toggle-headers.home').css('color', 'var(--nba-red)' );
-		}else {
-			$('#btns-wrapper .toggle-headers.home').text('toggle_off') ;
-			$('#btns-wrapper .toggle-headers.home').css('color', '#a2a2a2' );
-		}
-	});
-
-	$('#btns-wrapper .dark-mode').click(function () {
+	let darkhtml = `<div class='dark' title='toggle dark mode'><i class="material-icons dark-mode">dark_mode</i></div>`;
+	$('body nav').prepend(darkhtml);
+	$('.dark .dark-mode').click(function () {
 		isDarkMode = !isDarkMode;
 		if(isDarkMode){
 			$('body')[0].style.setProperty('--highlight-color', '#555');
@@ -112,27 +73,24 @@ function adjustDOM() {
 		} else{
 			$('body')[0].style.setProperty('--highlight-color', '#eee');
 			$('body')[0].style.setProperty('--font-color', '#000');
-			$('body')[0].style.setProperty('--icon-color', 'white');
+			$('body')[0].style.setProperty('--icon-color', '#fff');
 		}
 	});
-	_url = chrome.extension.getURL('src/inject/assets/fantasy_colored.png');
+	
+	let awaytable = $('table tbody')[AWAY];
+	let awayMatrix = populateMatrix(awaytable);
+	let awayTeamStats = awayMatrix.pop();
+	masterCssWizardry(awayMatrix, awayTeamStats, AWAY);
 
-	$('#btns-wrapper .beautify').click(function () { //here be dragons be very very careful
-		$('#btns-wrapper .beautify').css('filter', 'drop-shadow(0 0 6px gold)');
-		$('#btns-wrapper .fantasy').attr('src', _url);
-		let awaytable = $('table tbody')[AWAY];
-		let awayMatrix = populateMatrix(awaytable);
-		let awayTeamStats = awayMatrix.pop();
-		masterCssWizardry(awayMatrix, awayTeamStats, AWAY);
+	let hometable = $('table tbody')[HOME];
+	let homeMatrix = populateMatrix(hometable);
+	let homeTeamStats = homeMatrix.pop();
+	masterCssWizardry(homeMatrix, homeTeamStats, HOME);
 
-		let hometable = $('table tbody')[HOME];
-		let homeMatrix = populateMatrix(hometable);
-		let homeTeamStats = homeMatrix.pop();
-		masterCssWizardry(homeMatrix, homeTeamStats, HOME);
+	//Dec-2020: Dragons be slayed ! ! !
 
-		//Dec-2020: Dragons be slayed ! ! !
-
-	});
+	// });
+	$('#btns-wrapper .beautify').click();
 }
 
 function populateMatrix(tableObj) {
@@ -171,37 +129,36 @@ function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
 
 	let playerIndexesToHighlight = [];
 	//highlight double figure scorers 	
-	let columnArray = getCol(matrix, colMap['PTS']);
+	let columnArray = getCol(matrix, COL_MAP['PTS']);
 	for(let i = 0 ; i < columnArray.length ; i++){
 		if(columnArray[i] > 9)	
 			playerIndexesToHighlight.push(i+1);
 	}
-	cssExecutor(colMap['PTS'], playerIndexesToHighlight, homeAwayIdentifier, noteworthyCss);
+	cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, noteworthyCss);
 	
 	//highlight best scorer/s
-	playerIndexesToHighlight = getMaxIndexesInCategory(matrix, colMap['PTS'], homeAwayIdentifier);
-	cssExecutor(colMap['PTS'], playerIndexesToHighlight, homeAwayIdentifier, bestCss);
+	playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['PTS'], homeAwayIdentifier);
+	cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, bestCss);
 	
 	//highlight fouler
 	playerIndexesToHighlight = [];
-	columnArray = getCol(matrix, colMap['PF']);
+	columnArray = getCol(matrix, COL_MAP['PF']);
 	for(let i = 0 ; i < columnArray.length ; i++){
 		if(columnArray[i] === 6)	
 			playerIndexesToHighlight.push(i+1);
 	}
-	cssExecutor(colMap['PF'], playerIndexesToHighlight, homeAwayIdentifier, worstCss);
-
+	cssExecutor(COL_MAP['PF'], playerIndexesToHighlight, homeAwayIdentifier, worstCss);
 
 	//highlight TO-er
 	playerIndexesToHighlight = [];
 
-	playerIndexesToHighlight = getMaxIndexesInCategory(matrix, colMap['TO'], homeAwayIdentifier);
+	playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['TO'], homeAwayIdentifier);
 	for (let i = 0 ; i < playerIndexesToHighlight.length ; i++){
 		let turnoverRow = $($('table tbody')[homeAwayIdentifier])
 							.find('tr:nth-child(' + playerIndexesToHighlight[i] + ')');
 
-		turnoverRow.find('td:nth-child(' + (+colMap['TO']+OFFSET) + ')').css(worstCss);
-		$(turnoverRow.find('td:nth-child(' + (+colMap['TO']+OFFSET) + ') a')[0]).css(worstCss);
+		turnoverRow.find('td:nth-child(' + (+COL_MAP['TO']+OFFSET) + ')').css(worstCss);
+		$(turnoverRow.find('td:nth-child(' + (+COL_MAP['TO']+OFFSET) + ') a')[0]).css(worstCss);
 	}
 	
 }
@@ -211,13 +168,13 @@ function teamStatWizardry(teamStatsArray, teamRow){
 	const great = { 'font-weight': 'bold', 'color': 'green', 'font-size' : '17px' };
 	let columnsArr = ['3P%','FG%','FT%','REB','AST','STL','BLK'];
 
-	let percent3P = teamStatsArray[colMap['3P%']];
-	let percentFG = teamStatsArray[colMap['FG%']];
-	let percentFT = teamStatsArray[colMap['FT%']];
-	let reb = teamStatsArray[colMap['REB']];
-	let ast = teamStatsArray[colMap['AST']];
-	let stl = teamStatsArray[colMap['STL']];
-	let blk = teamStatsArray[colMap['BLK']];
+	let percent3P = teamStatsArray[COL_MAP['3P%']];
+	let percentFG = teamStatsArray[COL_MAP['FG%']];
+	let percentFT = teamStatsArray[COL_MAP['FT%']];
+	let reb = teamStatsArray[COL_MAP['REB']];
+	let ast = teamStatsArray[COL_MAP['AST']];
+	let stl = teamStatsArray[COL_MAP['STL']];
+	let blk = teamStatsArray[COL_MAP['BLK']];
 
 	let cssArr = [];
 	cssArr.push(extractTeamStatCss(percent3P, 30, 38, 45));
@@ -230,7 +187,7 @@ function teamStatWizardry(teamStatsArray, teamRow){
 
 	for (let i = 0; i < cssArr.length; i++) {
 		const title = columnsArr[i];
-		let cell = $(teamRow[(+colMap[title]+2)]);
+		let cell = $(teamRow[(+COL_MAP[title]+2)]);
 		cell.find('a').length > 0 ?
 			cell.find('a').css(cssArr[i]) :
 			cell.css(cssArr[i]);
@@ -261,8 +218,8 @@ function cssBatchExecutor(matrix, columnsArr, homeAwayIdentifier, cssObj){
 	let playerIndexesToHighlight = [];
 
 	for (let colTitle of columnsArr) {
-		playerIndexesToHighlight = getMaxIndexesInCategory(matrix, colMap[colTitle], homeAwayIdentifier);
-		cssExecutor(colMap[colTitle], playerIndexesToHighlight, homeAwayIdentifier, cssObj);
+		playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP[colTitle], homeAwayIdentifier);
+		cssExecutor(COL_MAP[colTitle], playerIndexesToHighlight, homeAwayIdentifier, cssObj);
 	}
 }
 
@@ -309,7 +266,7 @@ function goldAll100s(col, columnArray, homeAwayIdentifier) {
 }
 
 
-function findWorstPercent(matrix, columnIndex){
+function findWorstPercent(matrix, columnIndex){ //TODO: finish up
 	//$($('table tbody')[homeAwayIdentifier]).find('tr td:nth-child(' + columnIndex + ')');
 	let statPercent = getCol(matrix, columnIndex);
 	let statAttempts = getCol(matrix, columnIndex-1);
@@ -328,7 +285,7 @@ function findWorstPercent(matrix, columnIndex){
 		const curIndex = eligibleIndexes[i];
 		if(statPercent[i] == 0)
 		eligibleIndexes.push(i);
-	}	
+	}	7
 }
 
 function getCol(matrix, col){
@@ -341,9 +298,7 @@ function getCol(matrix, col){
 
 function fixHeaders(homeAwayIdentifier){ 
 	let cols = $('thead th');
-	$(`body`).prepend(`<div id="` + homeAwayIdentifier + `-headers-wrapper" 
-							style="top: 150px; position: sticky; z-index: 99;">
-						</div>`);
+	$('body').prepend('<div id="' + homeAwayIdentifier + '-headers-wrapper" ></div>');
 	let start = homeAwayIdentifier === 'away' ? 0 : cols.length/2;
 	let end = homeAwayIdentifier === 'away' ? cols.length/2 : cols.length;
 	for (let i = start ; i < end; i++) {
@@ -352,8 +307,6 @@ function fixHeaders(homeAwayIdentifier){
 		let bgColor = $(cur).css('background-color');
 		let width = $(cur).css('width');
 		let height = $(cur).css('height');
-		// let width = $(cur).width();
-		// let height = $(cur).height();
 		let left = $(cur).offset().left;
 		let fSize = $(cur).css('font-size');
 		
@@ -362,21 +315,21 @@ function fixHeaders(homeAwayIdentifier){
 			left: ` + left + `px;
 			width: ` + width + `;
 			height: ` + height + `;
-			padding: 15px 0 0 0;
+			padding-top: 15px;
 			background-color: ` + bgColor + `;
-			z-index: 99;
+			z-index: 20;
 		`;
 
 		let colheadcss = `
 			display: block;
 			font-size:` + fSize + `;
 			text-align: center;
-			color: red;
+			color: #4dd0e1;
 		`;
 
 		$('#' + homeAwayIdentifier + '-headers-wrapper').append(`
 			<div class="col` + i + `">			
-				<span class="colhead` + i + `" style='width: 100%;'></span>
+				<span class="colhead` + i + `"'></span>
 			</div>`);	
 		
 			$('head').prepend(`
@@ -386,7 +339,25 @@ function fixHeaders(homeAwayIdentifier){
 			</style>`);
 							
 		$('.colhead' + i).text(text);
-		// $('#' + homeAwayIdentifier + '-headers-wrapper').css('background-color',bgColor);
-		$('#' + homeAwayIdentifier + '-headers-wrapper').hide();
 	}
+}
+
+function addScrollHandler(){
+	$(window).scroll(function(){ 
+		let awayTableHeight = Math.floor($($('table')[AWAY]).offset().top);
+		let awayTableBottomBorder = Math.floor($($('table tbody')[AWAY]).find('tr:last-child').offset().top);
+		let homeTableHeight = Math.floor($($('table')[HOME]).offset().top);
+		let homeTableBottomBorder = Math.floor($($('table tbody')[HOME]).find('tr:last-child').offset().top);
+		
+		if($(window).scrollTop() >= awayTableHeight && $(window).scrollTop() <= awayTableBottomBorder){ //in top table range
+			$('#away-headers-wrapper').css('opacity', '1');
+			$('#home-headers-wrapper').css('opacity', '0');
+		} else if( $(window).scrollTop() >= homeTableHeight && $(window).scrollTop() <= homeTableBottomBorder){//in bottom table range
+			$('#home-headers-wrapper').css('opacity', '1');
+			$('#away-headers-wrapper').css('opacity', '0');
+		} else{
+			$('#away-headers-wrapper').css('opacity', '0');
+			$('#home-headers-wrapper').css('opacity', '0');
+		}
+	}); 
 }
