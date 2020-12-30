@@ -1,3 +1,13 @@
+chrome.extension.sendMessage({}, function (response) {
+
+	let readyStateCheckInterval = setInterval(function () {
+		if (document.readyState === "complete") {
+			clearInterval(readyStateCheckInterval);
+			implHighlight();
+			adjustDOM();
+		}
+	}, 20);
+});
 const colMap = {
 	'FGM' : '0',	'FGA' : '1',
 	'FG%' : '2',	'3PM' : '3',
@@ -354,14 +364,3 @@ function fixHeaders(homeAwayIdentifier){
 	}
 
 }
-
-chrome.extension.sendMessage({}, function (response) {
-
-	let readyStateCheckInterval = setInterval(function () {
-		if (document.readyState === "complete") {
-			clearInterval(readyStateCheckInterval);
-			implHighlight();
-			adjustDOM();
-		}
-	}, 10);
-});
