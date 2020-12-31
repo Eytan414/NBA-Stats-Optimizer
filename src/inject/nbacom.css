@@ -69,9 +69,3 @@ body nav .dark{
     top: 55px;
     z-index: 20;
 }
-#home-headers-wrapper{
-    filter: drop-shadow(0 1px 3px #ff0);
-}
-#away-headers-wrapper{
-    filter: drop-shadow(0 -1px 3px #4dd0e1);
-}

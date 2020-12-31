@@ -29,25 +29,29 @@ function implHighlight() {
 		mouseenter: function () {
 			let index = $(this).closest('tr').index() + 1;
 			let columnIndex = $(this).index();
-
-			$('table tbody tr:nth-child(' + index + ') td').each(function () { //get stat entire row
+			let isAwayTable = $($('table')[AWAY])[0] === $(this).closest('table')[0];
+			let tableObj = isAwayTable ? $('table')[AWAY] : $('table')[HOME];
+			
+			$(tableObj).find('tbody tr:nth-child(' + index + ') td').each(function () { //get stat entire row
 				$(this).addClass('myHighlight');
 			});
 
 			//handle column highlighting
-			$('table tbody tr').each(function (i, node) {
+			$(tableObj).find('tbody tr').each(function (i, node) {
 				$(node).find('td').eq(columnIndex).addClass('myHighlight');
 			});
 		},
 		mouseleave: function () {
 			let index = $(this).closest('tr').index() + 1;
 			let columnIndex = $(this).index();
-
-			$('table tbody tr:nth-child(' + index + ') td').each(function () {
+			let isAwayTable = $($('table')[AWAY])[0] === $(this).closest('table')[0];
+			let tableObj = isAwayTable ? $('table')[AWAY] : $('table')[HOME];
+			
+			$(tableObj).find('tbody tr:nth-child(' + index + ') td').each(function () {
 				$(this).removeClass('myHighlight');
 
 				//handle column highlighting
-				$('table tbody tr').each(function (i, node) {
+				$(tableObj).find('tbody tr').each(function (i, node) {
 					$(node).find('td').eq(columnIndex).removeClass('myHighlight');
 				});
 			})
@@ -299,6 +303,7 @@ function getCol(matrix, col){
 function fixHeaders(homeAwayIdentifier){ 
 	let cols = $('thead th');
 	$('body').prepend('<div id="' + homeAwayIdentifier + '-headers-wrapper" ></div>');
+	$('#' + homeAwayIdentifier + '-headers-wrapper').css('opacity', '0');
 	let start = homeAwayIdentifier === 'away' ? 0 : cols.length/2;
 	let end = homeAwayIdentifier === 'away' ? cols.length/2 : cols.length;
 	for (let i = start ; i < end; i++) {
@@ -309,6 +314,7 @@ function fixHeaders(homeAwayIdentifier){
 		let height = $(cur).css('height');
 		let left = $(cur).offset().left;
 		let fSize = $(cur).css('font-size');
+		let color = $(cur).css('color');
 		
 		let css = `
 			position: absolute;			
@@ -324,7 +330,7 @@ function fixHeaders(homeAwayIdentifier){
 			display: block;
 			font-size:` + fSize + `;
 			text-align: center;
-			color: #4dd0e1;
+			color: ` + color +`;
 		`;
 
 		$('#' + homeAwayIdentifier + '-headers-wrapper').append(`
