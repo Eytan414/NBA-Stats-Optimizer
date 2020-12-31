@@ -33,12 +33,12 @@ function implHighlight() {
 			let tableObj = isAwayTable ? $('table')[AWAY] : $('table')[HOME];
 			
 			$(tableObj).find('tbody tr:nth-child(' + index + ') td').each(function () { //get stat entire row
-				$(this).addClass('myHighlight');
+				$(this).addClass('highlight');
 			});
 
 			//handle column highlighting
 			$(tableObj).find('tbody tr').each(function (i, node) {
-				$(node).find('td').eq(columnIndex).addClass('myHighlight');
+				$(node).find('td').eq(columnIndex).addClass('highlight');
 			});
 		},
 		mouseleave: function () {
@@ -48,11 +48,11 @@ function implHighlight() {
 			let tableObj = isAwayTable ? $('table')[AWAY] : $('table')[HOME];
 			
 			$(tableObj).find('tbody tr:nth-child(' + index + ') td').each(function () {
-				$(this).removeClass('myHighlight');
+				$(this).removeClass('highlight');
 
 				//handle column highlighting
 				$(tableObj).find('tbody tr').each(function (i, node) {
-					$(node).find('td').eq(columnIndex).removeClass('myHighlight');
+					$(node).find('td').eq(columnIndex).removeClass('highlight');
 				});
 			})
 		}

@@ -18,7 +18,7 @@ table td a span {
     font-family: sans-serif;
 }
 
-body table tbody tr td.myHighlight{
+body table tbody tr td.highlight{
     background-color: var(--highlight-color);
 }
 a.text-cerulean {
