@@ -10,6 +10,7 @@ It works on any nba.com boxscore page and for every game.
 ➤ This extension defaults to be used with the "Night Eye - Dark mode on any website" extension, If you're not using dark readers just click the dark mode icon.
 
 ➤ The two toggles can be useful whenever you look at a "lower" row due to the table headers aren't visible in a way that the stat value loses the category context.
+
 *since the tables aren't identical in their respective columns width I've made two different toggles for each side.
 
 Hope you'll enjoy it!
