@@ -1,4 +1,7 @@
 body{
+    --nba-red:#c9082a;
+    --nba-blue:#17408B;
+
     /*light*/
     --highlight-color:#eee;
     --font-color:#000;
@@ -9,8 +12,6 @@ body{
     --font-color:#a0a0a0;
 	--icon-color:#444;
 	*/
-    --nba-red:#c9082a;
-    --nba-blue:#17408B;
 }
 
 td,

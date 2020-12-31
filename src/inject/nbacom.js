@@ -121,6 +121,7 @@ function populateMatrix(tableObj) {
 }
 
 function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
+	let colsToCss = ['3P%','FG%','FT%','AST','FGM','3PM','FTM','STL','REB','BLK'];
 	let teamRow = $($('table tbody')[homeAwayIdentifier]).find('tr:last-child td');
 	
 	cssBatchExecutor(matrix, colsToCss, homeAwayIdentifier, 'best-in-category');
