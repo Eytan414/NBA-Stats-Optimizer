@@ -121,14 +121,9 @@ function populateMatrix(tableObj) {
 }
 
 function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
-	let colsToCss = ['3P%','FG%','FT%','AST','FGM','3PM','FTM','STL','REB','BLK'];
-	const bestInCategoryCss = { 'font-weight': 'bold', 'color': 'green' };
-	const noteworthyCss = { 'font-weight': 'bold', 'font-size': '15px' };
-	const bestCss = { 'background-color': 'rgba(0, 255, 0, .15)', 'font-weight': 'bold', 'color': 'green', 'font-size': '17px' };
-	const worstCss = { 'font-weight': 'bold', 'font-size': '18px', 'color':'red' };
 	let teamRow = $($('table tbody')[homeAwayIdentifier]).find('tr:last-child td');
 	
-	cssBatchExecutor(matrix, colsToCss, homeAwayIdentifier, bestInCategoryCss);
+	cssBatchExecutor(matrix, colsToCss, homeAwayIdentifier, 'best-in-category');
 	teamStatWizardry(teamStatsArray, teamRow);
 
 	let playerIndexesToHighlight = [];
@@ -138,11 +133,11 @@ function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
 		if(columnArray[i] > 9)	
 			playerIndexesToHighlight.push(i+1);
 	}
-	cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, noteworthyCss);
+	cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, 'noteworthy');
 	
 	//highlight best scorer/s
 	playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['PTS'], homeAwayIdentifier);
-	cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, bestCss);
+	cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, 'best');
 	
 	//highlight fouler
 	playerIndexesToHighlight = [];
@@ -151,7 +146,7 @@ function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
 		if(columnArray[i] === 6)	
 			playerIndexesToHighlight.push(i+1);
 	}
-	cssExecutor(COL_MAP['PF'], playerIndexesToHighlight, homeAwayIdentifier, worstCss);
+	cssExecutor(COL_MAP['PF'], playerIndexesToHighlight, homeAwayIdentifier, 'worst');
 
 	//highlight TO-er
 	playerIndexesToHighlight = [];
@@ -161,15 +156,13 @@ function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
 		let turnoverRow = $($('table tbody')[homeAwayIdentifier])
 							.find('tr:nth-child(' + playerIndexesToHighlight[i] + ')');
 
-		turnoverRow.find('td:nth-child(' + (+COL_MAP['TO']+OFFSET) + ')').css(worstCss);
-		$(turnoverRow.find('td:nth-child(' + (+COL_MAP['TO']+OFFSET) + ') a')[0]).css(worstCss);
+		turnoverRow.find('td:nth-child(' + (+COL_MAP['TO']+OFFSET) + ')').addClass('worst');
+		$(turnoverRow.find('td:nth-child(' + (+COL_MAP['TO']+OFFSET) + ') a')[0]).addClass('worst');
 	}
 	
 }
 
 function teamStatWizardry(teamStatsArray, teamRow){
-	const nice = { 'font-weight': 'bold', 'color': 'green' };
-	const great = { 'font-weight': 'bold', 'color': 'green', 'font-size' : '17px' };
 	let columnsArr = ['3P%','FG%','FT%','REB','AST','STL','BLK'];
 
 	let percent3P = teamStatsArray[COL_MAP['3P%']];
@@ -218,24 +211,24 @@ function extractTeamStatCss(value, bad, nice, great){
 	return cssObj;
 }
 
-function cssBatchExecutor(matrix, columnsArr, homeAwayIdentifier, cssObj){
+function cssBatchExecutor(matrix, columnsArr, homeAwayIdentifier, classname){
 	let playerIndexesToHighlight = [];
 
 	for (let colTitle of columnsArr) {
 		playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP[colTitle], homeAwayIdentifier);
-		cssExecutor(COL_MAP[colTitle], playerIndexesToHighlight, homeAwayIdentifier, cssObj);
+		cssExecutor(COL_MAP[colTitle], playerIndexesToHighlight, homeAwayIdentifier, classname);
 	}
 }
 
-function cssExecutor(column, playerIndexesArray, homeAwayIdentifier, cssObj){
+function cssExecutor(column, playerIndexesArray, homeAwayIdentifier, classname){
 	for (let i = 0 ; i < playerIndexesArray.length ; i++){
 		let table = $($('table tbody')[homeAwayIdentifier]);
 		let row = $(table).find('tr:nth-child(' + playerIndexesArray[i] + ')');
 		let col = $(row).find('td:nth-child(' + (+column+OFFSET) + ')');
 
 		col.find('a').length > 0 ?
-			col.find('a').css(cssObj) :
-			$(col).css(cssObj);
+			col.find('a').addClass(classname) :
+			$(col).addClass(classname);
 	}
 }
 
@@ -264,32 +257,31 @@ function goldAll100s(col, columnArray, homeAwayIdentifier) {
 			columnArray[i] = 0; 
 		}
 	}
-	let cssObj = { 'color': 'gold', 'font-weight': 'bold'};
-	cssExecutor(col, perfectIndexesArray, homeAwayIdentifier, cssObj);
+	cssExecutor(col, perfectIndexesArray, homeAwayIdentifier, 'perfect');
 	return columnArray;
 }
 
 
 function findWorstPercent(matrix, columnIndex){ //TODO: finish up
 	//$($('table tbody')[homeAwayIdentifier]).find('tr td:nth-child(' + columnIndex + ')');
-	let statPercent = getCol(matrix, columnIndex);
-	let statAttempts = getCol(matrix, columnIndex-1);
-	let eligibleIndexes = [];
-	let playerIndexesArray = [];
+	// let statPercent = getCol(matrix, columnIndex);
+	// let statAttempts = getCol(matrix, columnIndex-1);
+	// let eligibleIndexes = [];
+	// let playerIndexesArray = [];
 
-	for (let i = 0; i < statAttempts.length; i++) { //shame o-fer with red color. min 2 shots
-		const attempts = statAttempts[i];
-		if(attempts > 1) eligibleIndexes.push(i);
-	}
-	cssExecutor(statPercent, playerIndexesArray,)
-	for (const i of eligibleIndexes) {
-	}
+	// for (let i = 0; i < statAttempts.length; i++) { //shame o-fer with red color. min 2 shots
+	// 	const attempts = statAttempts[i];
+	// 	if(attempts > 1) eligibleIndexes.push(i);
+	// }
+	// cssExecutor(statPercent, playerIndexesArray,)
+	// for (const i of eligibleIndexes) {
+	// }
 
-	for (let i = 0; i < eligibleIndexes.length; i++) {
-		const curIndex = eligibleIndexes[i];
-		if(statPercent[i] == 0)
-		eligibleIndexes.push(i);
-	}	7
+	// for (let i = 0; i < eligibleIndexes.length; i++) {
+	// 	const curIndex = eligibleIndexes[i];
+	// 	if(statPercent[i] == 0)
+	// 	eligibleIndexes.push(i);
+	// }
 }
 
 function getCol(matrix, col){
@@ -335,7 +327,7 @@ function fixHeaders(homeAwayIdentifier){
 
 		$('#' + homeAwayIdentifier + '-headers-wrapper').append(`
 			<div class="col` + i + `">			
-				<span class="colhead` + i + `"'></span>
+				<span class="colhead` + i + `"></span>
 			</div>`);	
 		
 			$('head').prepend(`

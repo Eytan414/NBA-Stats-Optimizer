@@ -69,3 +69,30 @@ body nav .dark{
     top: 55px;
     z-index: 20;
 }
+
+.best-in-category{
+    font-weight: bold;
+    color: green;
+}
+
+.noteworthy{
+    font-weight: bold;
+     font-size: 15px;
+}
+
+.best{ 
+    background-color: rgba(0, 255, 0, .15);
+    font-weight: 'bold';
+    color: green;
+    font-size: 17px;
+ }
+
+.worst{ 
+    font-weight: bold;
+    font-size: 18px;
+    color: red ;
+}
+.perfect{ 
+    color: gold;
+    font-weight: bold;
+}
