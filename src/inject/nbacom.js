@@ -5,6 +5,7 @@ chrome.extension.sendMessage({}, function (response) {
 			clearInterval(readyStateCheckInterval);
 			implHighlight();
 			adjustDOM();
+			magic();
 		}
 	}, 20);
 });
@@ -71,7 +72,7 @@ function adjustDOM() {
 	$('.dark .dark-mode').click(function () {
 		isDarkMode = !isDarkMode;
 		if(isDarkMode){
-			$('body')[0].style.setProperty('--highlight-color', '#555');
+			$('body')[0].style.setProperty('--highlight-color', '#303030 !important');
 			$('body')[0].style.setProperty('--font-color', '#a0a0a0');
 			$('body')[0].style.setProperty('--icon-color', '#444'); 
 		} else{
@@ -81,6 +82,10 @@ function adjustDOM() {
 		}
 	});
 	
+	//Dec-2020: Dragons be slayed ! ! !
+}
+
+function magic(){
 	let awaytable = $('table tbody')[AWAY];
 	let awayMatrix = populateMatrix(awaytable);
 	let awayTeamStats = awayMatrix.pop();
@@ -90,11 +95,6 @@ function adjustDOM() {
 	let homeMatrix = populateMatrix(hometable);
 	let homeTeamStats = homeMatrix.pop();
 	masterCssWizardry(homeMatrix, homeTeamStats, HOME);
-
-	//Dec-2020: Dragons be slayed ! ! !
-
-	// });
-	$('#btns-wrapper .beautify').click();
 }
 
 function populateMatrix(tableObj) {
@@ -109,7 +109,7 @@ function populateMatrix(tableObj) {
 				else if($(el).text().length < 6 && $(el).text().length !== 3) //do not insert dnp to matrix + remove from html.
 					return;
 				else{
-					$(currentRow).remove();
+					$(currentRow).hide();
 					return;
 				}
 			} else
@@ -138,7 +138,7 @@ function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
 	
 	//highlight best scorer/s
 	playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['PTS'], homeAwayIdentifier);
-	cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, 'best');
+	cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, 'best-in-team');
 	
 	//highlight fouler
 	playerIndexesToHighlight = [];
@@ -175,13 +175,13 @@ function teamStatWizardry(teamStatsArray, teamRow){
 	let blk = teamStatsArray[COL_MAP['BLK']];
 
 	let cssArr = [];
-	cssArr.push(extractTeamStatCss(percent3P, 30, 38, 45));
-	cssArr.push(extractTeamStatCss(percentFG, 40, 50, 55));
-	cssArr.push(extractTeamStatCss(percentFT, 60, 80, 90));
-	cssArr.push(extractTeamStatCss(reb, 40, 55, 65));
-	cssArr.push(extractTeamStatCss(ast, 15, 23, 30));
-	cssArr.push(extractTeamStatCss(stl, -1, 10, 15));
-	cssArr.push(extractTeamStatCss(blk, -1, 80, 90));
+	cssArr.push(extractTeamStatCss(percent3P, false, 30, 38, 45));
+	cssArr.push(extractTeamStatCss(percentFG, false, 40, 50, 55));
+	cssArr.push(extractTeamStatCss(percentFT, false, 60, 80, 90));
+	cssArr.push(extractTeamStatCss(reb, true , 40, 55, 65));
+	cssArr.push(extractTeamStatCss(ast, true , 15, 23, 30));
+	cssArr.push(extractTeamStatCss(stl, true, -1, 10, 15));
+	cssArr.push(extractTeamStatCss(blk, true, -1, 80, 90));
 
 	for (let i = 0; i < cssArr.length; i++) {
 		const title = columnsArr[i];
@@ -192,10 +192,10 @@ function teamStatWizardry(teamStatsArray, teamRow){
 	}
 }
 
-function extractTeamStatCss(value, bad, nice, great){
+function extractTeamStatCss(value, isBadRed, bad, nice, great){
 	let cssObj = {};
 	if(value <= bad)
-		cssObj['color'] = '#5d7eff'; //ice cold
+		cssObj['color'] = isBadRed ? 'red' : '#5d7eff'; //ice cold blue or bad red
 	else
 		cssObj['color'] = 'var(--font-color)';
 	
@@ -343,10 +343,14 @@ function fixHeaders(homeAwayIdentifier){
 
 function addScrollHandler(){
 	$(window).scroll(function(){ 
-		let awayTableHeight = Math.floor($($('table')[AWAY]).offset().top);
-		let awayTableBottomBorder = Math.floor($($('table tbody')[AWAY]).find('tr:last-child').offset().top);
-		let homeTableHeight = Math.floor($($('table')[HOME]).offset().top);
-		let homeTableBottomBorder = Math.floor($($('table tbody')[HOME]).find('tr:last-child').offset().top);
+		let offset = $($('table')[AWAY]).offset();
+		let awayTableHeight = offset ? Math.floor(offset.top) : 500;
+		offset = $($('table tbody')[AWAY]).find('tr:last-child').offset();
+		let awayTableBottomBorder = offset ? Math.floor(offset.top) : 1500;
+		offset = $($('table')[HOME]).offset();
+		let homeTableHeight = offset ? Math.floor(offset.top) : 1600;
+		offset = $($('table tbody')[HOME]).find('tr:last-child').offset();
+		let homeTableBottomBorder = offset ? Math.floor(offset.top) : 2500;
 		
 		if($(window).scrollTop() >= awayTableHeight && $(window).scrollTop() <= awayTableBottomBorder){ //in top table range
 			$('#away-headers-wrapper').css('opacity', '1');

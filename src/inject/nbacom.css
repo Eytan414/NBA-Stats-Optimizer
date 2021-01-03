@@ -8,7 +8,7 @@ body{
 	--icon-color:#fff;
 	
 	/*dark
-    --highlight-color:#555;
+    --highlight-color:#303030 !important;
     --font-color:#a0a0a0;
 	--icon-color:#444;
 	*/
@@ -22,10 +22,12 @@ table td a span {
 body table tbody tr td.highlight{
     background-color: var(--highlight-color);
 }
+
 a.text-cerulean {
     color: var(--font-color);
 	text-decoration: underline;
 }
+
 .fixed>:nth-child(3){
 	display:none;
 }
@@ -33,6 +35,7 @@ a.text-cerulean {
 table th, table td {
     text-align: center !important;
 }
+
 table td:first-child,
 table th:first-child {
 	width: 130px !important;
@@ -42,9 +45,11 @@ table thead {
 	overflow: hidden;
     height: 40px;
 }
+
 table thead tr{
 	height: 40px;
 }
+
 section .relative > .block > div{
 	max-height: 1000px;
 }
@@ -60,6 +65,7 @@ body nav .dark{
     top: 15px;
     cursor: pointer;
 }
+
 .dark i.dark-mode{
     color: var(--icon-color);
 }
@@ -73,7 +79,7 @@ body nav .dark{
 
 .best-in-category{
     font-weight: bold;
-    color: green;
+    color: green !important;
 }
 
 .noteworthy{
@@ -81,19 +87,20 @@ body nav .dark{
      font-size: 15px;
 }
 
-.best{ 
-    background-color: rgba(0, 255, 0, .15);
+tbody tr td.best-in-team{ 
     font-weight: 'bold';
-    color: green;
+    color: green !important;
+    background: #00ff0026 !important;
     font-size: 17px;
- }
+}
 
 .worst{ 
     font-weight: bold;
     font-size: 18px;
-    color: red ;
+    color: red !important;
 }
+
 .perfect{ 
-    color: gold;
+    color: gold !important;
     font-weight: bold;
 }
