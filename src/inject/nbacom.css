@@ -58,18 +58,23 @@ td a span {
     font-size: 11px;
     font-weight: bold;
 }
-
-body nav .dark{
+/* 
+.dark{
     position: fixed;
     left: 10px;
     top: 15px;
     cursor: pointer;
 }
 
+.dark ~ a{
+    margin-left: 10px;
+    margin-right: 0;
+}
+
 .dark i.dark-mode{
     color: var(--icon-color);
 }
-
+ */
 #home-headers-wrapper,
 #away-headers-wrapper{
     position: sticky;
@@ -77,18 +82,17 @@ body nav .dark{
     z-index: 20;
 }
 
-.best-in-category{
-    font-weight: bold;
-    color: green !important;
-}
-
 .noteworthy{
     font-weight: bold;
      font-size: 15px;
 }
 
-tbody tr td.best-in-team{ 
-    font-weight: 'bold';
+.best-in-category{
+    font-weight: bold;
+    color: green !important;
+}
+
+tbody tr td.best-in-team{
     color: green !important;
     background: #00ff0026 !important;
     font-size: 17px;
@@ -96,11 +100,14 @@ tbody tr td.best-in-team{
 
 .worst{ 
     font-weight: bold;
-    font-size: 18px;
     color: red !important;
 }
 
 .perfect{ 
     color: gold !important;
     font-weight: bold;
+}
+
+.big{
+    font-size: 17px !important;
 }

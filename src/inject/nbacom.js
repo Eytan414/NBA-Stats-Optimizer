@@ -1,13 +1,21 @@
 chrome.extension.sendMessage({}, function (response) {
-
 	let readyStateCheckInterval = setInterval(function () {
 		if (document.readyState === "complete") {
 			clearInterval(readyStateCheckInterval);
-			implHighlight();
-			adjustDOM();
-			magic();
+			if($('#box-score').parent().attr('aria-selected') === 'true'){
+				implHighlight();
+				adjustDOM();
+				magic();
+			}			
+			$('#box-score').click(function(){
+				setTimeout(function(){
+					implHighlight();
+					adjustDOM();
+					magic();
+				}, 0);
+			});
 		}
-	}, 20);
+	}, 10);
 });
 const COL_MAP = {
 	'FGM' : '0',	'FGA' : '1',
@@ -20,10 +28,10 @@ const COL_MAP = {
 	'BLK' : '14',	'TO'  : '15',
 	'PF'  : '16',	'PTS' : '17',
 	'+/-' : '18'};
+
 const OFFSET = 3; //compensation for the removed name+min's col's + 1 due to arr begins with 0
 const AWAY = 0; const HOME = 1;
-let isDarkMode = false;
-// let _url;
+// let isDarkMode = false;
 
 function implHighlight() {
 	$('body').on({
@@ -64,7 +72,24 @@ function adjustDOM() {
 	fixHeaders('away');
 	fixHeaders('home');
 	addScrollHandler();
+	// setupDarkMode();
+	addPrecentages();
+	//Dec-2020: Dragons be slayed ! ! !
+}
 
+function addPrecentages(){
+	for (let i = 0; i < 2; i++) { // i=0=AWAY, i=1=HOME
+		let fg = $($('table tbody')[i]).find('tr:last-child td')[+COL_MAP['FG%']+OFFSET-1];
+		let treys = $($('table tbody')[i]).find('tr:last-child td')[+COL_MAP['3P%']+OFFSET-1];
+		let ft = $($('table tbody')[i]).find('tr:last-child td')[+COL_MAP['FT%']+OFFSET-1];
+		
+		$(fg).text($(fg).text() + "%");
+		$(treys).text($(treys).text() + "%");
+		$(ft).text($(ft).text() + "%");
+	}
+}
+
+function setupDarkMode(){
 	let materialIconsUrl = '<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">';
 	$('head').append(materialIconsUrl);
 	let darkhtml = `<div class='dark' title='toggle dark mode'><i class="material-icons dark-mode">dark_mode</i></div>`;
@@ -81,8 +106,6 @@ function adjustDOM() {
 			$('body')[0].style.setProperty('--icon-color', '#fff');
 		}
 	});
-	
-	//Dec-2020: Dragons be slayed ! ! !
 }
 
 function magic(){
@@ -122,45 +145,52 @@ function populateMatrix(tableObj) {
 
 function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
 	let colsToCss = ['3P%','FG%','FT%','AST','FGM','3PM','FTM','STL','REB','BLK'];
+	let otherColsToCss = ['PTS','PF','TO'];
 	let teamRow = $($('table tbody')[homeAwayIdentifier]).find('tr:last-child td');
 	
 	cssBatchExecutor(matrix, colsToCss, homeAwayIdentifier, 'best-in-category');
+	handleOtherCols(matrix, otherColsToCss, homeAwayIdentifier);
 	teamStatWizardry(teamStatsArray, teamRow);
+}
 
+function handleOtherCols(matrix, statCategoryArr, homeAwayIdentifier){
 	let playerIndexesToHighlight = [];
-	//highlight double figure scorers 	
-	let columnArray = getCol(matrix, COL_MAP['PTS']);
-	for(let i = 0 ; i < columnArray.length ; i++){
-		if(columnArray[i] > 9)	
-			playerIndexesToHighlight.push(i+1);
-	}
-	cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, 'noteworthy');
-	
-	//highlight best scorer/s
-	playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['PTS'], homeAwayIdentifier);
-	cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, 'best-in-team');
-	
-	//highlight fouler
-	playerIndexesToHighlight = [];
-	columnArray = getCol(matrix, COL_MAP['PF']);
-	for(let i = 0 ; i < columnArray.length ; i++){
-		if(columnArray[i] === 6)	
-			playerIndexesToHighlight.push(i+1);
-	}
-	cssExecutor(COL_MAP['PF'], playerIndexesToHighlight, homeAwayIdentifier, 'worst');
 
-	//highlight TO-er
-	playerIndexesToHighlight = [];
+	for (let i = 0; i < statCategoryArr.length; i++) {
+		const category = statCategoryArr[i];
+		let columnArray = getCol(matrix, COL_MAP[category]);
 
-	playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['TO'], homeAwayIdentifier);
-	for (let i = 0 ; i < playerIndexesToHighlight.length ; i++){
-		let turnoverRow = $($('table tbody')[homeAwayIdentifier])
-							.find('tr:nth-child(' + playerIndexesToHighlight[i] + ')');
+		switch(category){
+			case 'PF':
+				playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['PF'], homeAwayIdentifier);
+				cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, 'worst');
+				if(columnArray[playerIndexesToHighlight[0]-1] === 6) //additional highlight on pf column at the first index to check if max = fouled out
+					cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, 'big');
+				playerIndexesToHighlight = [];
+				break;
+			
+			case 'TO':
+				playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['TO'], homeAwayIdentifier);
+				cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, 'worst');
+				playerIndexesToHighlight = [];
+				break;
+			
+			case 'PTS':
+				for(let i = 0 ; i < columnArray.length ; i++)
+					if(columnArray[i] > 9)	
+						playerIndexesToHighlight.push(i+1);
 
-		turnoverRow.find('td:nth-child(' + (+COL_MAP['TO']+OFFSET) + ')').addClass('worst');
-		$(turnoverRow.find('td:nth-child(' + (+COL_MAP['TO']+OFFSET) + ') a')[0]).addClass('worst');
+				cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, 'noteworthy');
+
+				//highlight best scorer/s
+				playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['PTS'], homeAwayIdentifier);
+				cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, 'best-in-team');
+				break;
+
+				default:
+					break;
+		}
 	}
-	
 }
 
 function teamStatWizardry(teamStatsArray, teamRow){
@@ -262,7 +292,6 @@ function goldAll100s(col, columnArray, homeAwayIdentifier) {
 	return columnArray;
 }
 
-
 function findWorstPercent(matrix, columnIndex){ //TODO: finish up
 	//$($('table tbody')[homeAwayIdentifier]).find('tr td:nth-child(' + columnIndex + ')');
 	// let statPercent = getCol(matrix, columnIndex);
@@ -291,7 +320,7 @@ function getCol(matrix, col){
 	   column.push(matrix[i][col]);
 	}
 	return column;
- }
+}
 
 function fixHeaders(homeAwayIdentifier){ 
 	let cols = $('thead th');
