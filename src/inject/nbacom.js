@@ -372,14 +372,18 @@ function fixHeaders(homeAwayIdentifier){
 
 function addScrollHandler(){
 	$(window).scroll(function(){ 
+		const rowHeight = 40;
 		let offset = $($('table')[AWAY]).offset();
-		let awayTableHeight = offset ? Math.floor(offset.top) : 500;
+		let awayTableStart = offset ? Math.floor(offset.top - rowHeight) : 500;
+
 		offset = $($('table tbody')[AWAY]).find('tr:last-child').offset();
-		let awayTableBottomBorder = offset ? Math.floor(offset.top) : 1500;
+		let awayTableEnd = offset ? Math.floor(offset.top - 2*rowHeight) : 1500;
+		
 		offset = $($('table')[HOME]).offset();
-		let homeTableHeight = offset ? Math.floor(offset.top) : 1600;
+		let homeTableStart = offset ? Math.floor(offset.top - rowHeight) : 1600;
+		
 		offset = $($('table tbody')[HOME]).find('tr:last-child').offset();
-		let homeTableBottomBorder = offset ? Math.floor(offset.top) : 2500;
+		let homeTableEnd = offset ? Math.floor(offset.top - 2*rowHeight) : 2500;
 		
 		if($(window).scrollTop() >= awayTableHeight && $(window).scrollTop() <= awayTableBottomBorder){ //in top table range
 			$('#away-headers-wrapper').css('opacity', '1');
