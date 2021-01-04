@@ -1,0 +1,21 @@
+{
+	"name": "NBA stats optimizer",
+	"version": "1.0.0",
+	"manifest_version": 3,
+	"description": "nba.com box score optimizer",
+	"default_locale": "en",
+	"action": {
+	  "default_icon": "icons/icon48.png"
+	},
+	"content_scripts": [
+	{
+		"matches": [ "https://www.nba.com/game/*" ],
+		"css": [ "src/inject/nbacom.css" ],
+		"js": [	
+			"src/inject/nbacom.js",
+			"src/inject/jquery-3.5.1.slim.min.js"
+		],
+		"run_at": "document_end"
+    }
+  ]  
+}
