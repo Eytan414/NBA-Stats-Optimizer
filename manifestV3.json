@@ -1,8 +1,8 @@
 {
-	"name": "NBA stats optimizer",
+	"name": "NBA stats wizard",
 	"version": "1.0.0",
 	"manifest_version": 3,
-	"description": "nba.com box score optimizer",
+	"description": "nba.com box score wizard",
 	"default_locale": "en",
 	"action": {
 	  "default_icon": "icons/icon48.png"

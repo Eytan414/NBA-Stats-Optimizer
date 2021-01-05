@@ -385,10 +385,10 @@ function addScrollHandler(){
 		offset = $($('table tbody')[HOME]).find('tr:last-child').offset();
 		let homeTableEnd = offset ? Math.floor(offset.top - 2*rowHeight) : 2500;
 		
-		if($(window).scrollTop() >= awayTableHeight && $(window).scrollTop() <= awayTableBottomBorder){ //in top table range
+		if($(window).scrollTop() >= awayTableStart && $(window).scrollTop() <= awayTableEnd){ //in top table range
 			$('#away-headers-wrapper').css('opacity', '1');
 			$('#home-headers-wrapper').css('opacity', '0');
-		} else if( $(window).scrollTop() >= homeTableHeight && $(window).scrollTop() <= homeTableBottomBorder){//in bottom table range
+		} else if( $(window).scrollTop() >= homeTableStart && $(window).scrollTop() <= homeTableEnd){//in bottom table range
 			$('#home-headers-wrapper').css('opacity', '1');
 			$('#away-headers-wrapper').css('opacity', '0');
 		} else{
