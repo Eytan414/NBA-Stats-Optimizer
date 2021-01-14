@@ -3,16 +3,51 @@ chrome.extension.sendMessage({}, function (response) {
 		if (document.readyState === "complete") {
 			clearInterval(readyStateCheckInterval);
 			if($('#box-score').parent().attr('aria-selected') === 'true'){
-				implHighlight();
-				adjustDOM();
-				magic();
+
+				let html = "<div class='msg'> Please refresh page to activate wizard </div>";
+				$('body').prepend(html);
+				
+				$('select[name=splits]').change(function(ev){
+					$('body .msg').show();
+					setTimeout(function() { $('body .msg').remove(); }, 5000);
+					
+					$('#away-headers-wrapper').remove();
+					$('#home-headers-wrapper').remove();
+
+				});
+				$('select[name=period]').change(function(){
+					$('#away-headers-wrapper').remove();
+					$('#home-headers-wrapper').remove();
+					
+					let curMinsArray;
+					let viewChanged = false;
+					
+					let interval = setInterval(function(){
+						curMinsArray = $($('table tbody')[AWAY]).find('tr td:nth-child(2)');
+						curMinsArray =  curMinsArray.map(function(ind,elm){
+							return $(elm).text();
+						});
+						if(minsArray.length === 0) minsArray = curMinsArray;
+						
+						for (let i = 0; i < minsArray.length/2; i++) 
+							if(minsArray[i] !== curMinsArray[i])
+								viewChanged = true;
+
+						if(viewChanged){
+							calcTeamStats = false;
+							cleanup();
+							magicExecutor();
+							minsArray = curMinsArray;
+							clearInterval(interval);
+						}
+							viewChanged = false;
+					},1);
+				});
+
+				magicExecutor();
 			}			
 			$('#box-score').click(function(){
-				setTimeout(function(){
-					implHighlight();
-					adjustDOM();
-					magic();
-				}, 0);
+				setTimeout(function(){ magicExecutor(); }, 0);
 			});
 		}
 	}, 10);
@@ -31,33 +66,58 @@ const COL_MAP = {
 
 const OFFSET = 3; //compensation for the removed name+min's col's + 1 due to arr begins with 0
 const AWAY = 0; const HOME = 1;
-// let isDarkMode = false;
+let calcTeamStats = true;
+let shouldAddErecentages = false;
+let minsArray = [];
+
+function magicExecutor() {
+	implHighlight();
+	adjustDOM();
+	magic();
+	if(shouldAddErecentages) addPrecentages();
+}
 
 function implHighlight() {
 	$('body').on({
 		mouseenter: function () {
-			let index = $(this).closest('tr').index() + 1;
+			let rowIndex = $(this).closest('tr').index() + 1;
 			let columnIndex = $(this).index();
 			let isAwayTable = $($('table')[AWAY])[0] === $(this).closest('table')[0];
 			let tableObj = isAwayTable ? $('table')[AWAY] : $('table')[HOME];
 			
-			$(tableObj).find('tbody tr:nth-child(' + index + ') td').each(function () { //get stat entire row
+			$(tableObj).find('tbody tr:nth-child(' + rowIndex + ') td').each(function () { //get stat entire row
 				$(this).addClass('highlight');
 			});
 
+			let headerSelector;
+			if(isAwayTable)
+				headerSelector = '#away-headers-wrapper .col' + columnIndex;
+			else
+				headerSelector = '#home-headers-wrapper .col' + (columnIndex+21);
+			
+			$(headerSelector).addClass('highlight');
+			
 			//handle column highlighting
 			$(tableObj).find('tbody tr').each(function (i, node) {
 				$(node).find('td').eq(columnIndex).addClass('highlight');
 			});
 		},
 		mouseleave: function () {
-			let index = $(this).closest('tr').index() + 1;
+			let rowIndex = $(this).closest('tr').index() + 1;
 			let columnIndex = $(this).index();
 			let isAwayTable = $($('table')[AWAY])[0] === $(this).closest('table')[0];
 			let tableObj = isAwayTable ? $('table')[AWAY] : $('table')[HOME];
 			
-			$(tableObj).find('tbody tr:nth-child(' + index + ') td').each(function () {
+			$(tableObj).find('tbody tr:nth-child(' + rowIndex + ') td').each(function () {
 				$(this).removeClass('highlight');
+
+				let headerSelector;
+				if(isAwayTable)
+					headerSelector = '#away-headers-wrapper .col' + columnIndex;
+				else
+					headerSelector = '#home-headers-wrapper .col' + (columnIndex+21);
+				
+				$(headerSelector).removeClass('highlight');
 
 				//handle column highlighting
 				$(tableObj).find('tbody tr').each(function (i, node) {
@@ -69,24 +129,34 @@ function implHighlight() {
 }
 
 function adjustDOM() {
-	fixHeaders('away');
-	fixHeaders('home');
 	addScrollHandler();
-	// setupDarkMode();
-	addPrecentages();
 	//Dec-2020: Dragons be slayed ! ! !
 }
 
 function addPrecentages(){
+	let tableObj = $('table tbody');
 	for (let i = 0; i < 2; i++) { // i=0=AWAY, i=1=HOME
-		let fg = $($('table tbody')[i]).find('tr:last-child td')[+COL_MAP['FG%']+OFFSET-1];
-		let treys = $($('table tbody')[i]).find('tr:last-child td')[+COL_MAP['3P%']+OFFSET-1];
-		let ft = $($('table tbody')[i]).find('tr:last-child td')[+COL_MAP['FT%']+OFFSET-1];
-		
-		$(fg).text($(fg).text() + "%");
-		$(treys).text($(treys).text() + "%");
-		$(ft).text($(ft).text() + "%");
+		let teamFg = $(tableObj[i]).find('tr:last-child td')[+COL_MAP['FG%']+OFFSET-1];
+		let teamTreys = $(tableObj[i]).find('tr:last-child td')[+COL_MAP['3P%']+OFFSET-1];
+		let teamFt = $(tableObj[i]).find('tr:last-child td')[+COL_MAP['FT%']+OFFSET-1];
+		$(teamFg).html($(teamFg).html() + "<small>%</small>");
+		$(teamTreys).html($(teamTreys).html() + "<small>%</small>");
+		$(teamFt).html($(teamFt).html() + "<small>%</small>");
+
+		$($(tableObj)[i]).find('tr').each((rowIndex, currentRow) => {
+			let teamRowIndex = 	$($(tableObj)[i]).find('tr').length - 1;
+			if(rowIndex === teamRowIndex) return;
+
+			let fg = $(currentRow).find('td:nth-child(' + (+COL_MAP['FG%']+OFFSET) +')');
+			let treys = $(currentRow).find('td:nth-child(' + (+COL_MAP['3P%']+OFFSET) +')');
+			let ft = $(currentRow).find('td:nth-child(' + (+COL_MAP['FT%']+OFFSET) +')');
+			$(fg).html($(fg).html() + "<small>%</small>");
+			$(treys).html($(treys).html() + "<small>%</small>");
+			$(ft).html($(ft).html() + "<small>%</small>");
+		});
+
 	}
+	shouldAddErecentages = false;
 }
 
 function setupDarkMode(){
@@ -117,7 +187,12 @@ function magic(){
 	let hometable = $('table tbody')[HOME];
 	let homeMatrix = populateMatrix(hometable);
 	let homeTeamStats = homeMatrix.pop();
-	masterCssWizardry(homeMatrix, homeTeamStats, HOME);
+	masterCssWizardry(homeMatrix, homeTeamStats, HOME);	
+
+	setTimeout(function(){
+		fixHeaders('away');
+		fixHeaders('home');
+	},0);
 }
 
 function populateMatrix(tableObj) {
@@ -150,7 +225,7 @@ function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
 	
 	cssBatchExecutor(matrix, colsToCss, homeAwayIdentifier, 'best-in-category');
 	handleOtherCols(matrix, otherColsToCss, homeAwayIdentifier);
-	teamStatWizardry(teamStatsArray, teamRow);
+	if(calcTeamStats) teamStatWizardry(teamStatsArray, teamRow);
 }
 
 function handleOtherCols(matrix, statCategoryArr, homeAwayIdentifier){
@@ -217,29 +292,27 @@ function teamStatWizardry(teamStatsArray, teamRow){
 		const title = columnsArr[i];
 		let cell = $(teamRow[(+COL_MAP[title]+2)]);
 		cell.find('a').length > 0 ?
-			cell.find('a').css(cssArr[i]) :
-			cell.css(cssArr[i]);
+			cell.find('a').addClass(cssArr[i]) :
+			cell.addClass(cssArr[i]);
 	}
 }
 
 function extractTeamStatCss(value, isBadRed, bad, nice, great){
-	let cssObj = {};
+	let cssClasses = '';
 	if(value <= bad)
-		cssObj['color'] = isBadRed ? 'red' : '#5d7eff'; //ice cold blue or bad red
+		isBadRed ? cssClasses += ' worst' : cssClasses += ' ice-cold'; 
 	else
-		cssObj['color'] = 'var(--font-color)';
+		cssClasses += ' default-color'
 	
 	if(value >= nice){
-		cssObj['font-weight'] = 'bold'; 
-		cssObj['font-size'] =  '17px'; 
+		cssClasses += ' big';
 	}
 	if(value >= great)
-		cssObj['color'] = 'green';
-		
+		cssClasses += ' best-in-category';
 	if(value === 100)
-		cssObj['color'] = 'gold';
-	
-	return cssObj;
+		cssClasses += ' perfect';
+
+	return cssClasses;
 }
 
 function cssBatchExecutor(matrix, columnsArr, homeAwayIdentifier, classname){
@@ -290,28 +363,6 @@ function goldAll100s(col, columnArray, homeAwayIdentifier) {
 	}
 	cssExecutor(col, perfectIndexesArray, homeAwayIdentifier, 'perfect');
 	return columnArray;
-}
-
-function findWorstPercent(matrix, columnIndex){ //TODO: finish up
-	//$($('table tbody')[homeAwayIdentifier]).find('tr td:nth-child(' + columnIndex + ')');
-	// let statPercent = getCol(matrix, columnIndex);
-	// let statAttempts = getCol(matrix, columnIndex-1);
-	// let eligibleIndexes = [];
-	// let playerIndexesArray = [];
-
-	// for (let i = 0; i < statAttempts.length; i++) { //shame o-fer with red color. min 2 shots
-	// 	const attempts = statAttempts[i];
-	// 	if(attempts > 1) eligibleIndexes.push(i);
-	// }
-	// cssExecutor(statPercent, playerIndexesArray,)
-	// for (const i of eligibleIndexes) {
-	// }
-
-	// for (let i = 0; i < eligibleIndexes.length; i++) {
-	// 	const curIndex = eligibleIndexes[i];
-	// 	if(statPercent[i] == 0)
-	// 	eligibleIndexes.push(i);
-	// }
 }
 
 function getCol(matrix, col){
@@ -396,4 +447,10 @@ function addScrollHandler(){
 			$('#home-headers-wrapper').css('opacity', '0');
 		}
 	}); 
+}
+
+function cleanup(){
+	$('td, td a').each(function(){
+		$(this).removeClass('perfect best-in-category noteworthy best-in-team worst ice-cold big');
+	});
 }

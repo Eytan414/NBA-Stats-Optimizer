@@ -19,8 +19,8 @@ table td a span {
     font-family: sans-serif;
 }
 
-body table tbody tr td.highlight{
-    background-color: var(--highlight-color);
+body table tbody tr td.highlight,.highlight{
+    background-color: var(--highlight-color) !important;
 }
 
 a.text-cerulean {
@@ -58,7 +58,7 @@ td a span {
     font-size: 11px;
     font-weight: bold;
 }
-/* 
+
 .dark{
     position: fixed;
     left: 10px;
@@ -74,7 +74,7 @@ td a span {
 .dark i.dark-mode{
     color: var(--icon-color);
 }
- */
+
 #home-headers-wrapper,
 #away-headers-wrapper{
     position: sticky;
@@ -82,25 +82,33 @@ td a span {
     z-index: 20;
 }
 
+.best-in-category{
+    font-weight: bold;
+    color: rgb(0, 200, 0) !important;
+}
+
 .noteworthy{
     font-weight: bold;
      font-size: 15px;
 }
 
-.best-in-category{
-    font-weight: bold;
-    color: green !important;
-}
-
-tbody tr td.best-in-team{
-    color: green !important;
+tbody tr td.best-in-team{ 
+    font-weight: 'bold';
+    color: rgb(0, 200, 0) !important;
     background: #00ff0026 !important;
     font-size: 17px;
+}
+
+.default-color{
+    color: var(--font-color) !important;
 }
 
 .worst{ 
     font-weight: bold;
     color: red !important;
+}
+.ice-cold{
+    color: #5d7eff !important;
 }
 
 .perfect{ 
@@ -110,4 +118,16 @@ tbody tr td.best-in-team{
 
 .big{
     font-size: 17px !important;
+}
+
+.msg{
+    display: none;
+    position: fixed;
+    top: calc(50% - 50px);
+    left: calc(50% - 150px);
+    margin: auto;
+    z-index: 9999;
+    background: #303030;
+    padding: 15px;
+    border-radius: 10px;
 }
