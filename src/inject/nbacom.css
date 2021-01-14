@@ -127,7 +127,8 @@ tbody tr td.best-in-team{
     left: calc(50% - 150px);
     margin: auto;
     z-index: 9999;
-    background: #303030;
+    background: var(--highlight-color);
     padding: 15px;
+    border: 1px solid #ccc;
     border-radius: 10px;
 }

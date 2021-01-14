@@ -9,16 +9,21 @@ chrome.extension.sendMessage({}, function (response) {
 				
 				$('select[name=splits]').change(function(ev){
 					$('body .msg').show();
-					setTimeout(function() { $('body .msg').remove(); }, 5000);
+					setTimeout(function() { $('body .msg').hide(); }, 5000);
 					
 					$('#away-headers-wrapper').remove();
 					$('#home-headers-wrapper').remove();
-
+					canCalcPeriodChange = false;
 				});
+
+
 				$('select[name=period]').change(function(){
 					$('#away-headers-wrapper').remove();
 					$('#home-headers-wrapper').remove();
-					
+					if(!canCalcPeriodChange){
+						cleanup();
+						return;
+					}
 					let curMinsArray;
 					let viewChanged = false;
 					
@@ -67,6 +72,7 @@ const COL_MAP = {
 const OFFSET = 3; //compensation for the removed name+min's col's + 1 due to arr begins with 0
 const AWAY = 0; const HOME = 1;
 let calcTeamStats = true;
+let canCalcPeriodChange = true;
 let shouldAddErecentages = false;
 let minsArray = [];
 
