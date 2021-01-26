@@ -91,19 +91,19 @@ function implHighlight() {
 			let isAwayTable = $($('table')[AWAY])[0] === $(this).closest('table')[0];
 			let tableObj = isAwayTable ? $('table')[AWAY] : $('table')[HOME];
 			
-			$(tableObj).find('tbody tr:nth-child(' + rowIndex + ') td').each(function () { //get stat entire row
+			$(tableObj).find('tbody tr:nth-child(' + rowIndex + ') td').each(function (i) { //get stat entire row
+				if(i === 0)
+					$(this).addClass('zoomed');
 				$(this).addClass('highlight');
 			});
+			
+			//handle sticky headers + column highlighting
+			let headerSelector = isAwayTable ? 
+				'#away-headers-wrapper .col' + columnIndex :
+				'#home-headers-wrapper .col' + (columnIndex+21);		
+			$(headerSelector).addClass('zoomed');
 
-			let headerSelector;
-			if(isAwayTable)
-				headerSelector = '#away-headers-wrapper .col' + columnIndex;
-			else
-				headerSelector = '#home-headers-wrapper .col' + (columnIndex+21);
-			
-			$(headerSelector).addClass('highlight');
-			
-			//handle column highlighting
+			$(tableObj).find('thead th:nth-child('+ (columnIndex+1) + ')').addClass('zoomed');
 			$(tableObj).find('tbody tr').each(function (i, node) {
 				$(node).find('td').eq(columnIndex).addClass('highlight');
 			});
@@ -114,18 +114,18 @@ function implHighlight() {
 			let isAwayTable = $($('table')[AWAY])[0] === $(this).closest('table')[0];
 			let tableObj = isAwayTable ? $('table')[AWAY] : $('table')[HOME];
 			
-			$(tableObj).find('tbody tr:nth-child(' + rowIndex + ') td').each(function () {
+			$(tableObj).find('tbody tr:nth-child(' + rowIndex + ') td').each(function (i) {
+				if(i === 0)
+					$(this).removeClass('zoomed');
 				$(this).removeClass('highlight');
+			
+				//handle sticky headers + column highlighting
+				let headerSelector = isAwayTable ? 
+					'#away-headers-wrapper .col' + columnIndex :
+					'#home-headers-wrapper .col' + (columnIndex+21);		
+				$(headerSelector).removeClass('zoomed');
 
-				let headerSelector;
-				if(isAwayTable)
-					headerSelector = '#away-headers-wrapper .col' + columnIndex;
-				else
-					headerSelector = '#home-headers-wrapper .col' + (columnIndex+21);
-				
-				$(headerSelector).removeClass('highlight');
-
-				//handle column highlighting
+				$(tableObj).find('thead th:nth-child('+ (columnIndex+1) + ')').removeClass('zoomed');
 				$(tableObj).find('tbody tr').each(function (i, node) {
 					$(node).find('td').eq(columnIndex).removeClass('highlight');
 				});
@@ -139,50 +139,7 @@ function adjustDOM() {
 	//Dec-2020: Dragons be slayed ! ! !
 }
 
-function addPrecentages(){
-	let tableObj = $('table tbody');
-	for (let i = 0; i < 2; i++) { // i=0=AWAY, i=1=HOME
-		let teamFg = $(tableObj[i]).find('tr:last-child td')[+COL_MAP['FG%']+OFFSET-1];
-		let teamTreys = $(tableObj[i]).find('tr:last-child td')[+COL_MAP['3P%']+OFFSET-1];
-		let teamFt = $(tableObj[i]).find('tr:last-child td')[+COL_MAP['FT%']+OFFSET-1];
-		$(teamFg).html($(teamFg).html() + "<small>%</small>");
-		$(teamTreys).html($(teamTreys).html() + "<small>%</small>");
-		$(teamFt).html($(teamFt).html() + "<small>%</small>");
 
-		$($(tableObj)[i]).find('tr').each((rowIndex, currentRow) => {
-			let teamRowIndex = 	$($(tableObj)[i]).find('tr').length - 1;
-			if(rowIndex === teamRowIndex) return;
-
-			let fg = $(currentRow).find('td:nth-child(' + (+COL_MAP['FG%']+OFFSET) +')');
-			let treys = $(currentRow).find('td:nth-child(' + (+COL_MAP['3P%']+OFFSET) +')');
-			let ft = $(currentRow).find('td:nth-child(' + (+COL_MAP['FT%']+OFFSET) +')');
-			$(fg).html($(fg).html() + "<small>%</small>");
-			$(treys).html($(treys).html() + "<small>%</small>");
-			$(ft).html($(ft).html() + "<small>%</small>");
-		});
-
-	}
-	shouldAddErecentages = false;
-}
-
-function setupDarkMode(){
-	let materialIconsUrl = '<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">';
-	$('head').append(materialIconsUrl);
-	let darkhtml = `<div class='dark' title='toggle dark mode'><i class="material-icons dark-mode">dark_mode</i></div>`;
-	$('body nav').prepend(darkhtml);
-	$('.dark .dark-mode').click(function () {
-		isDarkMode = !isDarkMode;
-		if(isDarkMode){
-			$('body')[0].style.setProperty('--highlight-color', '#303030 !important');
-			$('body')[0].style.setProperty('--font-color', '#a0a0a0');
-			$('body')[0].style.setProperty('--icon-color', '#444'); 
-		} else{
-			$('body')[0].style.setProperty('--highlight-color', '#eee');
-			$('body')[0].style.setProperty('--font-color', '#000');
-			$('body')[0].style.setProperty('--icon-color', '#fff');
-		}
-	});
-}
 
 function magic(){
 	let awaytable = $('table tbody')[AWAY];
@@ -397,33 +354,33 @@ function fixHeaders(homeAwayIdentifier){
 		
 		let css = `
 			position: absolute;			
-			left: ` + left + `px;
-			width: ` + width + `;
-			height: ` + height + `;
+			left: ${left}px;
+			width: ${width};
+			height: ${height};
 			padding-top: 15px;
-			background-color: ` + bgColor + `;
+			background-color: ${bgColor};
 			z-index: 20;
 		`;
 
 		let colheadcss = `
 			display: block;
-			font-size:` + fSize + `;
+			font-size: ${fSize};
 			text-align: center;
-			color: ` + color +`;
+			color: ${color};
 		`;
 
 		$('#' + homeAwayIdentifier + '-headers-wrapper').append(`
-			<div class="col` + i + `">			
-				<span class="colhead` + i + `"></span>
+			<div class="col${i} + ">			
+				<span class="colhead${i}"></span>
 			</div>`);	
 		
 			$('head').prepend(`
 			 <style>
-				.col` + i + `{` + css +`}
-				.colhead` + i + `{` + colheadcss +`}
+				.col${i} { ${css} }
+				.colhead${i} { ${colheadcss} }
 			</style>`);
 							
-		$('.colhead' + i).text(text);
+		$(`.colhead${i}`).text(text);
 	}
 }
 

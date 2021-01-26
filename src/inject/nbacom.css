@@ -16,7 +16,9 @@ body{
 
 td,
 table td a span {
-    font-family: sans-serif;
+    font-family: Roboto;
+    font-size: .9em;
+    font-weight: normal;
 }
 
 body table tbody tr td.highlight,.highlight{
@@ -131,4 +133,7 @@ tbody tr td.best-in-team{
     padding: 15px;
     border: 1px solid #ccc;
     border-radius: 10px;
+}
+.zoomed{
+    transform: scale(1.15);
 }
