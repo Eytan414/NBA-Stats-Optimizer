@@ -6,6 +6,7 @@ chrome.extension.sendMessage({}, function (response) {
 
 				let html = "<div class='msg'> Please refresh page to activate wizard </div>";
 				$('body').prepend(html);
+				paintHoveredHeaders();
 				
 				$('select[name=splits]').change(function(ev){
 					$('body .msg').show();
@@ -16,11 +17,12 @@ chrome.extension.sendMessage({}, function (response) {
 					canCalcPeriodChange = false;
 				});
 
-
-				$('select[name=period]').change(function(){
+				$('select[name=period]').change(function(){ //period changed (q3,q4,h1,h2 etc.)
 					$('#away-headers-wrapper').remove();
 					$('#home-headers-wrapper').remove();
 					if(!canCalcPeriodChange){
+						$('body .msg').show();
+						setTimeout(function() { $('body .msg').hide(); }, 5000);
 						cleanup();
 						return;
 					}
@@ -33,13 +35,13 @@ chrome.extension.sendMessage({}, function (response) {
 							return $(elm).text();
 						});
 						if(minsArray.length === 0) minsArray = curMinsArray;
-						
 						for (let i = 0; i < minsArray.length/2; i++) 
 							if(minsArray[i] !== curMinsArray[i])
 								viewChanged = true;
 
 						if(viewChanged){
 							calcTeamStats = false;
+							paintHoveredHeaders();
 							cleanup();
 							magicExecutor();
 							minsArray = curMinsArray;
@@ -69,6 +71,158 @@ const COL_MAP = {
 	'PF'  : '16',	'PTS' : '17',
 	'+/-' : '18'};
 
+const TEAM_COLORS_MAP = [
+	{
+		'fullName': 'Atlanta Hawks',
+		'mainColor': '#c8102e',
+		'secondaryColor': '#fafafa'
+	},
+	{
+		'fullName': 'Brooklyn Nets',
+		'mainColor': '#010101',
+		'secondaryColor': '#fafafa'
+	},
+	{
+		'fullName': 'Boston Celtics',
+		'mainColor': '#007a33',
+		'secondaryColor': '#fafafa'
+	},
+	{
+		'fullName': 'Charlotte Hornets',
+		'mainColor': '#201747',
+		'secondaryColor': '#00778b'
+	},
+	{
+		'fullName': 'Chicago Bulls',
+		'mainColor': '#ba0c2f',
+		'secondaryColor': '#222222'
+	},
+	{
+		'fullName': 'Cleveland Cavaliers',
+		'mainColor': '#6f263d',
+		'secondaryColor': '#ffb81c'
+	},
+	{
+		'fullName': 'Dallas Mavericks',
+		'mainColor': '#0050b5',
+		'secondaryColor': '#8d9093'
+	},
+	{
+		'fullName': 'Denver Nuggets',
+		'mainColor': '#418fde',
+		'secondaryColor': '#ffc72c'
+	},
+	{
+		'fullName': 'Detroit Pistons',
+		'mainColor': '#003da5',
+		'secondaryColor': '#d50032'
+	},
+	{
+		'fullName': 'Golden State Warriors',
+		'mainColor': '#ffc72d',
+		'secondaryColor': '#003da5'
+	},
+	{
+		'fullName': 'Houston Rockets',
+		'mainColor': '#ba0c2f',
+		'secondaryColor': '#8d9093'
+	},
+	{
+		'fullName': 'Indiana Pacers',
+		'mainColor': '#041e42',
+		'secondaryColor': '#ffb81c'
+	},
+	{
+		'fullName': 'LA Clippers',
+		'mainColor': '#d50032',
+		'secondaryColor': '#003da5'
+	},
+	{
+		'fullName': 'Los Angeles Lakers',
+		'mainColor': '#702f8a',
+		'secondaryColor': '#ffc72c'
+	},
+	{
+		'fullName': 'Memphis Grizzlies',
+		'mainColor': '#23375b',
+		'secondaryColor': '#6189b9'
+	},
+	{
+		'fullName': 'Miami Heat',
+		'mainColor': '#862633',
+		'secondaryColor': '#222222'
+	},
+	{
+		'fullName': 'Milwaukee Bucks',
+		'mainColor': '#2c5234',
+		'secondaryColor': '#ddcba4'
+	},
+	{
+		'fullName': 'Minnesota Timberwolves',
+		'mainColor': '#002b5c',
+		'secondaryColor': '#7ac143'
+	},
+	{
+		'fullName': 'New Orleans Pelicans',
+		'mainColor': '#002b5c',
+		'secondaryColor': '#e31937'
+	},
+	{
+		'fullName': 'New York Knicks',
+		'mainColor': '#003da5',
+		'secondaryColor': '#ff671f'
+	},
+	{
+		'fullName': 'Oklahoma City Thunder',
+		'mainColor': '#0072ff',
+		'secondaryColor': '#f05133'
+	},
+	{
+		'fullName': 'Orlando Magic',
+		'mainColor': '#007dc5',
+		'secondaryColor': '#c4ced3'
+	},
+	{
+		'fullName': 'Philadelphia 76ers',
+		'mainColor': '#006bb6',
+		'secondaryColor': '#ed174c'
+	},
+	{
+		'fullName': 'Phoenix Suns',
+		'mainColor': '#e56020',
+		'secondaryColor': '#1d1160'
+	},
+	{
+		'fullName': 'Portland Trail Blazers',
+		'mainColor': '#f0163a',
+		'secondaryColor': '#222222'
+	},
+	{
+		'fullName': 'Sacramento Kings',
+		'mainColor': '#8e9090',
+		'secondaryColor': '#724c9f'
+	},
+	{
+		'fullName': 'San Antonio Spurs',
+		'mainColor': '#b6bfbf',
+		'secondaryColor': '#222222'
+	},
+	{
+		'fullName': 'Toronto Raptors',
+		'mainColor': '#ce1141',
+		'secondaryColor': '#c4ced3'
+	},
+	{
+		'fullName': 'Utah Jazz',
+		'mainColor': '#002b5c',
+		'secondaryColor': '#ea910b'
+	},
+	{
+		'fullName': 'Washington Wizards',
+		'mainColor': '#0c2340',
+		'secondaryColor': '#c8102e'
+	}
+];
 const OFFSET = 3; //compensation for the removed name+min's col's + 1 due to arr begins with 0
 const AWAY = 0; const HOME = 1;
 let calcTeamStats = true;
@@ -134,12 +288,52 @@ function implHighlight() {
 	}, 'table tbody tr td');
 }
 
-function adjustDOM() {
-	addScrollHandler();
-	//Dec-2020: Dragons be slayed ! ! !
+function paintHoveredHeaders() {
+	let awayTable = $('table')[AWAY];
+	let homeTable = $('table')[HOME];
+	
+	let awayTeam = $($('h1 span')[AWAY]).text();
+	let homeTeam = $($('h1 span')[HOME]).text();
+
+	let homeObj = TEAM_COLORS_MAP.filter(team =>{
+		return team.fullName.toLowerCase() === homeTeam.toLowerCase();		
+	});
+	let awayObj = TEAM_COLORS_MAP.filter(team =>{
+		return team.fullName.toLowerCase() === awayTeam.toLowerCase();		
+	});
+	
+	let aMainColor = awayObj[0].mainColor;
+	let aSecColor  = awayObj[0].secondaryColor;
+	let hMainColor = homeObj[0].mainColor;
+	let hSecColor  = homeObj[0].secondaryColor;
+	
+	let awayBGVal = '-webkit-linear-gradient(230deg,' + aSecColor+'aa' + ' 50%, ' + aMainColor+'aa' + ' 85%)';
+	let homeBgVal = 'linear-gradient(230deg,' + hSecColor+'aa' + ' 50%, ' + hMainColor+'aa' + ' 85%)';
+	
+	let awayTitleBGVal = '-webkit-linear-gradient(230deg,' + aSecColor+'cd' + ' 50%, ' + aMainColor+'cd' + ' 85%)';
+	let homeTitleBgVal = 'linear-gradient(230deg,' + hSecColor+'cd' + ' 50%, ' + hMainColor+'cd' + ' 85%)';
+
+	$('#__next > div:nth-child(2) .p-0 section:nth-child(2) > div:first-child').css('background', awayTitleBGVal);
+	$('#__next > div:nth-child(2) .p-0 section:nth-child(3) > div:first-child').css('background', homeTitleBgVal);
+
+	$(awayTable).find('tbody tr').each(function (i, el) { 
+		$(el).find('td').each(function (i, el) { 
+			if(i === 0)
+				$(el).css('background', awayBGVal);
+		});
+	});
+	$(homeTable).find('tbody tr').each(function (i, el) { 
+		$(el).find('td').each(function (i, el) { 
+			if(i === 0)
+				$(el).css('background', homeBgVal);
+		});
+	});
+
 }
 
-
+function adjustDOM() { 
+	addScrollHandler();
+}
 
 function magic(){
 	let awaytable = $('table tbody')[AWAY];

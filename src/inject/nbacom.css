@@ -17,7 +17,7 @@ body{
 td,
 table td a span {
     font-family: Roboto;
-    font-size: .9em;
+    font-size: 1em;
     font-weight: normal;
 }
 
@@ -135,5 +135,5 @@ tbody tr td.best-in-team{
     border-radius: 10px;
 }
 .zoomed{
-    transform: scale(1.15);
+    transform: scale(1.1);
 }

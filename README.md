@@ -1,17 +1,33 @@
-# NBAStatsWizard
+Have you been finding yourself lost on the nba.com boxscore page? this light extension will highlight all that matters to you so you could keep track of your favorite team and players.
 
-Are you finding yourself getting lost in the nba.com boxscore page? this light extension will highlight all that matters for you as well as remove player DNP rows as they do not affect the statistics, which is the main purpose of the page.
+★ No setup required!
+★ Highlight rows and columns on mouse hover
+★ Colorize notable stats and team leaders
+★ Remove DNP player rows
+★ Sticky table headers when you scroll down
 
-It works on any nba.com boxscore page and for every game, no setup required, just navigate to any game and watch the magic!
+It works on any nba.com boxscore page and for every game, just navigate to a game's boxscore and watch the magic!
+Screenshots taken from:
+https://www.nba.com/game/dal-vs-sas-0022000237/box-score
 
-<!-- 
-➤ you do not need to worry about loading time, by using the built-in Chrome DevTools performance test at different hours and devices I the results were usually around ~2%* to page loading time but never over 5% while testing without ANY other extensions in order to minimize variables as much as possible and get a good approximation.
- -->
+You're welcome to send feature requests and bug reports as I will try and keep it updated.
 
-You're welcome to send feature requests and bug reports as I will try to keep it updated if needed.
+IMPORTANT - this extension is and always will be for free, and will NEVER include ads. It was made for my own personal use and thought I should share it with the world.
 
-IMPORTANT - this extension is and always will be for the affordable price of 0, and it will NEVER include ads. This was made for my own personal use and thought I should share it with the world.
 
 Hope you'll enjoy it!
 
 Be kind.
+
+
+
+Changelog:
+‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+
+➤ 1.2:
+    • Colorize player name cells + team header according to its respective colors
+    • Zoom first row and column of currently hovered cell
+
+➤ 1.1:
+    • Wizard now supports different periods such as quarter of half
+    • Added sticky headers when you scroll past the table header
