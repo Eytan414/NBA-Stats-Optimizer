@@ -291,7 +291,6 @@ function implHighlight() {
 function paintHoveredHeaders() {
 	let awayTable = $('table')[AWAY];
 	let homeTable = $('table')[HOME];
-	
 	let awayTeam = $($('h1 span')[AWAY]).text();
 	let homeTeam = $($('h1 span')[HOME]).text();
 
@@ -309,12 +308,12 @@ function paintHoveredHeaders() {
 	
 	let awayBGVal = '-webkit-linear-gradient(230deg,' + aSecColor+'aa' + ' 50%, ' + aMainColor+'aa' + ' 85%)';
 	let homeBgVal = 'linear-gradient(230deg,' + hSecColor+'aa' + ' 50%, ' + hMainColor+'aa' + ' 85%)';
-	
 	let awayTitleBGVal = '-webkit-linear-gradient(230deg,' + aSecColor+'cd' + ' 50%, ' + aMainColor+'cd' + ' 85%)';
 	let homeTitleBgVal = 'linear-gradient(230deg,' + hSecColor+'cd' + ' 50%, ' + hMainColor+'cd' + ' 85%)';
 
-	$('#__next > div:nth-child(2) .p-0 section:nth-child(2) > div:first-child').css('background', awayTitleBGVal);
-	$('#__next > div:nth-child(2) .p-0 section:nth-child(3) > div:first-child').css('background', homeTitleBgVal);
+	let offset = $('#__next > div:nth-child(2) .p-0 section').length === 2 ? 0 : 1; //finished games has additional section
+	$('#__next > div:nth-child(2) .p-0 section:nth-child(' + (offset+1) +') > div:first-child').css('background', awayTitleBGVal);
+	$('#__next > div:nth-child(2) .p-0 section:nth-child(' + (offset+2) +') > div:first-child').css('background', homeTitleBgVal);
 
 	$(awayTable).find('tbody tr').each(function (i, el) { 
 		$(el).find('td').each(function (i, el) { 
