@@ -1,64 +1,24 @@
 chrome.extension.sendMessage({}, function (response) {
 	let readyStateCheckInterval = setInterval(function () {
 		if (document.readyState === "complete") {
-			clearInterval(readyStateCheckInterval);
-			if($('#box-score').parent().attr('aria-selected') === 'true'){
+			clearInterval(readyStateCheckInterval);			
+			
+			if($('.z-10 .w-full div > span').text() === "LIVE"){
+				isLiveGame = true;
+				startChangeDetector();
+			}
 
-				let html = "<div class='msg'> Please refresh page to activate wizard </div>";
-				$('body').prepend(html);
-				paintHoveredHeaders();
-				
-				$('select[name=splits]').change(function(ev){
-					$('body .msg').show();
-					setTimeout(function() { $('body .msg').hide(); }, 5000);
-					
-					$('#away-headers-wrapper').remove();
-					$('#home-headers-wrapper').remove();
-					canCalcPeriodChange = false;
-				});
-
-				$('select[name=period]').change(function(){ //period changed (q3,q4,h1,h2 etc.)
-					$('#away-headers-wrapper').remove();
-					$('#home-headers-wrapper').remove();
-					if(!canCalcPeriodChange){
-						$('body .msg').show();
-						setTimeout(function() { $('body .msg').hide(); }, 5000);
-						cleanup();
-						return;
-					}
-					let curMinsArray;
-					let viewChanged = false;
-					
-					let interval = setInterval(function(){
-						curMinsArray = $($('table tbody')[AWAY]).find('tr td:nth-child(2)');
-						curMinsArray =  curMinsArray.map(function(ind,elm){
-							return $(elm).text();
-						});
-						if(minsArray.length === 0) minsArray = curMinsArray;
-						for (let i = 0; i < minsArray.length/2; i++) 
-							if(minsArray[i] !== curMinsArray[i])
-								viewChanged = true;
-
-						if(viewChanged){
-							calcTeamStats = false;
-							paintHoveredHeaders();
-							cleanup();
-							magicExecutor();
-							minsArray = curMinsArray;
-							clearInterval(interval);
-						}
-							viewChanged = false;
-					},1);
-				});
-
-				magicExecutor();
-			}			
-			$('#box-score').click(function(){
-				setTimeout(function(){ magicExecutor(); }, 0);
+			$('section + div ul li a:not(#box-score)').click(function(){ 
+				$('#home-headers-wrapper, #away-headers-wrapper').remove();
 			});
+
+			//handle boxscore tab selected
+			if($('#box-score').parent().attr('aria-selected') === 'true'){ handleBoxscoreTab(); }		
+			$('#box-score').click(function(){ setTimeout(function(){ magicExecutor(); }, 0); });
 		}
 	}, 10);
 });
+
 const COL_MAP = {
 	'FGM' : '0',	'FGA' : '1',
 	'FG%' : '2',	'3PM' : '3',
@@ -79,7 +39,7 @@ const TEAM_COLORS_MAP = [
 	},
 	{
 		'fullName': 'Brooklyn Nets',
-		'mainColor': '#010101',
+		'mainColor': '#121212',
 		'secondaryColor': '#fafafa'
 	},
 	{
@@ -225,14 +185,84 @@ const TEAM_COLORS_MAP = [
 ];
 const OFFSET = 3; //compensation for the removed name+min's col's + 1 due to arr begins with 0
 const AWAY = 0; const HOME = 1;
+let minsArray = [];
 let calcTeamStats = true;
 let canCalcPeriodChange = true;
 let shouldAddErecentages = false;
-let minsArray = [];
+let isLiveGame = false;
+let highlightEnabled = false;
+
+function tableSrcChanged(){
+	$('body .msg').show();
+	setTimeout(function() { $('body .msg').hide(); }, 5000);
+	cleanup();
+	$('#home-headers-wrapper, #away-headers-wrapper').remove();
+
+	canCalcPeriodChange = false;
+}
+
+function periodChanged(){ //period changed (q3,q4,h1,h2 etc.)
+	$('#home-headers-wrapper, #away-headers-wrapper').remove();
+	if(!canCalcPeriodChange){
+		$('body .msg').show();
+		setTimeout(function() { $('body .msg').hide(); }, 5000);
+		cleanup();
+		return;
+	}
+	let curMinsArray;
+	let viewChanged = false;
+	
+	let interval = setInterval(function(){
+		curMinsArray = $($('table tbody')[AWAY]).find('tr td:nth-child(2)');
+		curMinsArray =  curMinsArray.map(function(ind,elm){
+			return $(elm).text();
+		});
+
+		if(minsArray.length === 0) minsArray = curMinsArray;
+		for (let i = 0; i < minsArray.length/2; i++) 
+			if(minsArray[i] !== curMinsArray[i])
+				viewChanged = true;
+
+		if(viewChanged){
+			calcTeamStats = false;
+			cleanup();
+			colorHeadersByTeamsColors();
+			magicExecutor();
+			minsArray = curMinsArray;
+			clearInterval(interval);
+		}
+			viewChanged = false;
+	},20);
+}
+
+function handleBoxscoreTab() {
+	let html = "<div class='msg'> Please refresh page to enable full wizard </div>";
+	$('body').prepend(html);
+	$('select[name=splits]').change(function() { tableSrcChanged(); });
+	$('select[name=period]').change(function(){ periodChanged(); });
+	colorHeadersByTeamsColors();
+	magicExecutor();
+}
+
+function startChangeDetector() {
+	let targetNodes = $("table td,table td a");
+	let MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
+	let myObserver = new MutationObserver(mutationHandler);
+	let obsConfig = { characterData: true, subtree: true };
+
+	targetNodes.each (function() {
+		myObserver.observe (this, obsConfig);
+	} );
+}
+	
+function mutationHandler(mutationRecords) {
+	cleanup();
+	magicExecutor();
+}
 
 function magicExecutor() {
-	implHighlight();
-	adjustDOM();
+	if(!isLiveGame || !highlightEnabled)  
+		implHighlight();
 	magic();
 	if(shouldAddErecentages) addPrecentages();
 }
@@ -286,9 +316,10 @@ function implHighlight() {
 			})
 		}
 	}, 'table tbody tr td');
+	highlightEnabled = true;
 }
 
-function paintHoveredHeaders() {
+function colorHeadersByTeamsColors() {
 	let awayTable = $('table')[AWAY];
 	let homeTable = $('table')[HOME];
 	let awayTeam = $($('h1 span')[AWAY]).text();
@@ -330,10 +361,6 @@ function paintHoveredHeaders() {
 
 }
 
-function adjustDOM() { 
-	addScrollHandler();
-}
-
 function magic(){
 	let awaytable = $('table tbody')[AWAY];
 	let awayMatrix = populateMatrix(awaytable);
@@ -362,7 +389,7 @@ function populateMatrix(tableObj) {
 					return;
 				else if($(el).text().length < 6 && $(el).text().length !== 3) //do not insert dnp to matrix + remove from html.
 					return;
-				else{
+				else if (!isLiveGame){
 					$(currentRow).hide();
 					return;
 				}
@@ -563,7 +590,7 @@ function fixHeaders(homeAwayIdentifier){
 		`;
 
 		$('#' + homeAwayIdentifier + '-headers-wrapper').append(`
-			<div class="col${i} + ">			
+			<div class="col${i}">			
 				<span class="colhead${i}"></span>
 			</div>`);	
 		
@@ -575,6 +602,7 @@ function fixHeaders(homeAwayIdentifier){
 							
 		$(`.colhead${i}`).text(text);
 	}
+	addScrollHandler();
 }
 
 function addScrollHandler(){
@@ -606,6 +634,7 @@ function addScrollHandler(){
 }
 
 function cleanup(){
+	$('#home-headers-wrapper, #away-headers-wrapper').remove();
 	$('td, td a').each(function(){
 		$(this).removeClass('perfect best-in-category noteworthy best-in-team worst ice-cold big');
 	});

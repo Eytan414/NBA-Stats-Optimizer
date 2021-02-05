@@ -1,8 +1,8 @@
 {
-	"name": "NBA Boxscore Wizard",
-	"version": "1.1.4",
+	"name": "NBA Stats Wizard",
+	"version": "1.2.2",
 	"manifest_version": 3,
-	"description": "nba.com boxscore wizard",
+	"description": "Optimize nba.com boxscore page for viewing",
 	"default_locale": "en",
 	"icons": {
 		"48": "icons/icon48.png",
