@@ -3,11 +3,23 @@
 	"version": "1.2.2",
 	"manifest_version": 3,
 	"description": "Optimize nba.com boxscore page for viewing",
-	"default_locale": "en",
+	"default_locale": "en",	
+	"action": {
+		"default_popup": "src/page_action/popup.html"
+	},  
 	"icons": {
-		"48": "icons/icon48.png",
-		"128": "icons/icon128.png"
+		"48": "assets/icon48.png",
+		"128": "assets/icon128.png"
 	},
+	"web_accessible_resources": [
+		"assets/power_on.svg", 
+		"assets/power_off.svg", 
+		"assets/power_disabled.svg", 
+		"assets/wizard.png", 
+		"assets/wizard_color.png", 
+		"assets/playerin.wav", 
+		"assets/playerinLoud.wav"
+	],
 	"content_scripts": [
 	{
 		"matches": [ "https://www.nba.com/game/*" ],

@@ -1,4 +1,33 @@
-chrome.extension.sendMessage({}, function (response) {
+
+
+//##########################
+//TODO: add all ptw logic ##
+//##########################
+//##########################
+
+chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
+	switch(message){
+		case 'activate':
+			watchPlayer = true;
+			if(isLiveGame) setupPTW();
+			break;
+		case 'deactivate':
+			watchPlayer = false;
+			deactivatePtw();
+			break;
+		case 'ptwSwitch':
+			isLiveGame ? sendResponse(watchPlayer) : sendResponse(-1);
+			break;
+		default:
+			break;
+		}
+	});
+	
+	function deactivatePtw(){ 
+		//TODO: implement logic bla bla
+	}
+	
+	chrome.extension.sendMessage({}, function (response) {
 	let readyStateCheckInterval = setInterval(function () {
 		if (document.readyState === "complete") {
 			clearInterval(readyStateCheckInterval);			
