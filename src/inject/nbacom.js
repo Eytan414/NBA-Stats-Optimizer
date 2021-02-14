@@ -2,19 +2,20 @@ chrome.extension.sendMessage({}, function (response) {
 	let readyStateCheckInterval = setInterval(function () {
 		if (document.readyState === "complete") {
 			clearInterval(readyStateCheckInterval);			
+			$('section + div ul li a:not(#box-score)').click(function(){ 
+				$('#home-headers-wrapper, #away-headers-wrapper').remove();
+			});
 			
 			if($('.z-10 .w-full div > span').text() === "LIVE"){
 				isLiveGame = true;
 				startChangeDetector();
 			}
-
-			$('section + div ul li a:not(#box-score)').click(function(){ 
-				$('#home-headers-wrapper, #away-headers-wrapper').remove();
-			});
-
 			//handle boxscore tab selected
-			if($('#box-score').parent().attr('aria-selected') === 'true'){ handleBoxscoreTab(); }		
-			$('#box-score').click(function(){ setTimeout(function(){ magicExecutor(); }, 0); });
+			let $boxscoreElem = $('#box-score');
+			if($boxscoreElem.parent().attr('aria-selected') === 'true'){
+				 handleBoxscoreTab(); 
+			}		
+			$boxscoreElem.click(function(){ setTimeout(function(){ magicExecutor(); }, 0); });
 		}
 	}, 10);
 });
@@ -193,19 +194,20 @@ let isLiveGame = false;
 let highlightEnabled = false;
 
 function tableSrcChanged(){
-	$('body .msg').show();
-	setTimeout(function() { $('body .msg').hide(); }, 5000);
+	let msg = $('body .msg');
+	msg.show();
+	setTimeout(function() { msg.hide(); }, 5000);
 	cleanup();
-	$('#home-headers-wrapper, #away-headers-wrapper').remove();
-
+	$('#away-headers-wrapper,#home-headers-wrapper').remove();
 	canCalcPeriodChange = false;
 }
 
 function periodChanged(){ //period changed (q3,q4,h1,h2 etc.)
 	$('#home-headers-wrapper, #away-headers-wrapper').remove();
 	if(!canCalcPeriodChange){
-		$('body .msg').show();
-		setTimeout(function() { $('body .msg').hide(); }, 5000);
+		let msg = $('body .msg');
+		msg.show();
+		setTimeout(function() { msg.hide(); }, 5000);
 		cleanup();
 		return;
 	}
@@ -245,7 +247,7 @@ function handleBoxscoreTab() {
 }
 
 function startChangeDetector() {
-	let targetNodes = $("table td,table td a");
+	let targetNodes = $("table td");
 	let MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 	let myObserver = new MutationObserver(mutationHandler);
 	let obsConfig = { characterData: true, subtree: true };
@@ -261,9 +263,8 @@ function mutationHandler(mutationRecords) {
 }
 
 function magicExecutor() {
-	if(!isLiveGame || !highlightEnabled)  
-		implHighlight();
 	magic();
+	if(!highlightEnabled) implHighlight();
 	if(shouldAddErecentages) addPrecentages();
 }
 
@@ -320,10 +321,10 @@ function implHighlight() {
 }
 
 function colorHeadersByTeamsColors() {
-	let awayTable = $('table')[AWAY];
-	let homeTable = $('table')[HOME];
-	let awayTeam = $($('h1 span')[AWAY]).text();
-	let homeTeam = $($('h1 span')[HOME]).text();
+	let [awayTable, homeTable] = $('table');
+	let [awayTeam, homeTeam] = $('h1 span');
+	awayTeam = $(awayTeam).text();
+	homeTeam = $(homeTeam).text();
 
 	let homeObj = TEAM_COLORS_MAP.filter(team =>{
 		return team.fullName.toLowerCase() === homeTeam.toLowerCase();		
@@ -337,9 +338,9 @@ function colorHeadersByTeamsColors() {
 	let hMainColor = homeObj[0].mainColor;
 	let hSecColor  = homeObj[0].secondaryColor;
 	
-	let awayBGVal = '-webkit-linear-gradient(230deg,' + aSecColor+'aa' + ' 50%, ' + aMainColor+'aa' + ' 85%)';
+	let awayBGVal = 'linear-gradient(230deg,' + aSecColor+'aa' + ' 50%, ' + aMainColor+'aa' + ' 85%)';
 	let homeBgVal = 'linear-gradient(230deg,' + hSecColor+'aa' + ' 50%, ' + hMainColor+'aa' + ' 85%)';
-	let awayTitleBGVal = '-webkit-linear-gradient(230deg,' + aSecColor+'cd' + ' 50%, ' + aMainColor+'cd' + ' 85%)';
+	let awayTitleBGVal = 'linear-gradient(230deg,' + aSecColor+'cd' + ' 50%, ' + aMainColor+'cd' + ' 85%)';
 	let homeTitleBgVal = 'linear-gradient(230deg,' + hSecColor+'cd' + ' 50%, ' + hMainColor+'cd' + ' 85%)';
 
 	let offset = $('#__next > div:nth-child(2) .p-0 section').length === 2 ? 0 : 1; //finished games has additional section
@@ -362,12 +363,12 @@ function colorHeadersByTeamsColors() {
 }
 
 function magic(){
-	let awaytable = $('table tbody')[AWAY];
+	let [awaytable,hometable] = $('table tbody');
+	
 	let awayMatrix = populateMatrix(awaytable);
 	let awayTeamStats = awayMatrix.pop();
 	masterCssWizardry(awayMatrix, awayTeamStats, AWAY);
-
-	let hometable = $('table tbody')[HOME];
+	
 	let homeMatrix = populateMatrix(hometable);
 	let homeTeamStats = homeMatrix.pop();
 	masterCssWizardry(homeMatrix, homeTeamStats, HOME);	
@@ -384,17 +385,18 @@ function populateMatrix(tableObj) {
 
 	$(tableObj).find('tr').each((i, currentRow) => {
 		playerStatline = $(currentRow).find('td').map((i, el) => {
+			const $el = $(el);
 			if (i < 2){
 				if(i === 0) //do not insert name to matrix 
 					return;
-				else if($(el).text().length < 6 && $(el).text().length !== 3) //do not insert dnp to matrix + remove from html.
+				else if($el.text().length < 6 && $el.text().length !== 3) //do not insert dnp to matrix + hide row
 					return;
-				else if (!isLiveGame){
+				else if(!isLiveGame){ 
 					$(currentRow).hide();
 					return;
 				}
 			} else
-				return +($(el).text());
+				return +($el.text());
 		});
 		if (playerStatline.length > 0) matrixToReturn.push(playerStatline);
 	});
@@ -407,11 +409,11 @@ function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
 	let teamRow = $($('table tbody')[homeAwayIdentifier]).find('tr:last-child td');
 	
 	cssBatchExecutor(matrix, colsToCss, homeAwayIdentifier, 'best-in-category');
-	handleOtherCols(matrix, otherColsToCss, homeAwayIdentifier);
+	colorOtherCols(matrix, otherColsToCss, homeAwayIdentifier);
 	if(calcTeamStats) teamStatWizardry(teamStatsArray, teamRow);
 }
 
-function handleOtherCols(matrix, statCategoryArr, homeAwayIdentifier){
+function colorOtherCols(matrix, statCategoryArr, homeAwayIdentifier){
 	let playerIndexesToHighlight = [];
 
 	for (let i = 0; i < statCategoryArr.length; i++) {
@@ -515,7 +517,7 @@ function cssExecutor(column, playerIndexesArray, homeAwayIdentifier, classname){
 
 		col.find('a').length > 0 ?
 			col.find('a').addClass(classname) :
-			$(col).addClass(classname);
+			col.addClass(classname);
 	}
 }
 
@@ -563,14 +565,14 @@ function fixHeaders(homeAwayIdentifier){
 	let start = homeAwayIdentifier === 'away' ? 0 : cols.length/2;
 	let end = homeAwayIdentifier === 'away' ? cols.length/2 : cols.length;
 	for (let i = start ; i < end; i++) {
-		const cur = cols[i];
-		let text = $(cur).text();	
-		let bgColor = $(cur).css('background-color');
-		let width = $(cur).css('width');
-		let height = $(cur).css('height');
-		let left = $(cur).offset().left;
-		let fSize = $(cur).css('font-size');
-		let color = $(cur).css('color');
+		const $cur = $(cols[i]);
+		let text = $cur.text();	
+		let bgColor = $cur.css('background-color');
+		let width = $cur.css('width');
+		let height = $cur.css('height');
+		let left = $cur.offset().left;
+		let fSize = $cur.css('font-size');
+		let color = $cur.css('color');
 		
 		let css = `
 			position: absolute;			
@@ -594,8 +596,8 @@ function fixHeaders(homeAwayIdentifier){
 				<span class="colhead${i}"></span>
 			</div>`);	
 		
-			$('head').prepend(`
-			 <style>
+		$('head').prepend(`
+			<style>
 				.col${i} { ${css} }
 				.colhead${i} { ${colheadcss} }
 			</style>`);
@@ -608,27 +610,31 @@ function fixHeaders(homeAwayIdentifier){
 function addScrollHandler(){
 	$(window).scroll(function(){ 
 		const rowHeight = 40;
-		let offset = $($('table')[AWAY]).offset();
+		const [awayTableElem, homeTableElem] = $('table');
+		const [awayTbodyElem, homeTbodyElem] = $('table tbody');
+		//calc offset + get away boundaries
+		let offset = $(awayTableElem).offset();
 		let awayTableStart = offset ? Math.floor(offset.top - rowHeight) : 500;
-
-		offset = $($('table tbody')[AWAY]).find('tr:last-child').offset();
+		offset = $(awayTbodyElem).find('tr:last-child').offset();
 		let awayTableEnd = offset ? Math.floor(offset.top - 2*rowHeight) : 1500;
-		
-		offset = $($('table')[HOME]).offset();
+		//update offset + get home boundaries
+		offset = $(homeTableElem).offset();
 		let homeTableStart = offset ? Math.floor(offset.top - rowHeight) : 1600;
-		
-		offset = $($('table tbody')[HOME]).find('tr:last-child').offset();
+		offset = $(homeTbodyElem).find('tr:last-child').offset();
 		let homeTableEnd = offset ? Math.floor(offset.top - 2*rowHeight) : 2500;
 		
-		if($(window).scrollTop() >= awayTableStart && $(window).scrollTop() <= awayTableEnd){ //in top table range
-			$('#away-headers-wrapper').css('opacity', '1');
-			$('#home-headers-wrapper').css('opacity', '0');
-		} else if( $(window).scrollTop() >= homeTableStart && $(window).scrollTop() <= homeTableEnd){//in bottom table range
-			$('#home-headers-wrapper').css('opacity', '1');
-			$('#away-headers-wrapper').css('opacity', '0');
+		let $awayTableStickyElem = $('#away-headers-wrapper');
+		let $homeTableStickyElem = $('#home-headers-wrapper');
+		let curScroll = $(window).scrollTop();
+		if(curScroll >= awayTableStart && curScroll <= awayTableEnd){ //in top (away) table range
+			$awayTableStickyElem.css('opacity', '1');
+			$homeTableStickyElem.css('opacity', '0');
+		} else if(curScroll >= homeTableStart && curScroll <= homeTableEnd){//in bottom (home) table range
+			$awayTableStickyElem.css('opacity', '0');
+			$homeTableStickyElem.css('opacity', '1');
 		} else{
-			$('#away-headers-wrapper').css('opacity', '0');
-			$('#home-headers-wrapper').css('opacity', '0');
+			$awayTableStickyElem.css('opacity', '0');
+			$homeTableStickyElem.css('opacity', '0');
 		}
 	}); 
 }
