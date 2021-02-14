@@ -1,0 +1,37 @@
+#mainPopup, 
+#fallbackPopup{
+    background-color: #e0e0e0;
+    padding: 10px;
+    height: 150px;
+    min-width: 250px;
+    font-family: cursive, Arial, sans-serif !important;
+    box-shadow: 10px 10px 20px 3px #444, -10px -10px 20px 10px #555;
+}
+
+#fallbackPopup{
+    display: none;
+    height: 100px;
+}
+#fallbackPopup div{
+    font-size: 16px;
+}
+
+h1, h2 {
+    margin: 5px 0;
+    text-align: center;
+}
+
+#power {
+    background-image: url(../../assets/power_off.svg);
+    width: 30px;
+    height: 30px;
+    margin: 10px auto;
+    cursor: pointer;
+}
+#power.on{
+    background-image: url(../../assets/power_on.svg);
+}
+#power.disabled{
+    background-image: url(../../assets/power_disabled.svg) !important;
+    cursor: default !important;
+}
