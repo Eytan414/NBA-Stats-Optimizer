@@ -20,14 +20,47 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 			break;
 		default:
 			break;
-		}
-	});
-	
-	function deactivatePtw(){ 
-		//TODO: implement logic bla bla
 	}
+});
 	
-	chrome.extension.sendMessage({}, function (response) {
+function deactivatePtw(){ 
+	//TODO: implement logic bla bla
+}
+	
+
+function setupPTW(){
+	$('table tbody tr td:nth-child(1)').each(function(i, el){ //add right click event on name columns
+		$(el).on("mousedown", mousedownHandler);
+		$(el).on("mouseup", mouseupHandler);
+		$(el).on("contextmenu", rightClickHandler);
+	});
+	magicExecutor();
+	$('body')[0].style.setProperty('--ptw-grab', 'grab');
+}
+
+function rightClickHandler(event){
+	return false;
+}
+function mouseupHandler(event){
+	if(event.button === 2)
+		$('body')[0].style.setProperty('--ptw-grab', 'grab');
+}
+
+function mousedownHandler(event){
+	if(event.button === 2)
+		$('body')[0].style.setProperty('--ptw-grab', 'grabbing');
+		const $clickedEl = $(this);
+		$('table tbody tr td:nth-child(1)').each(function(i, el){
+			$(el).find('a').removeClass('ptw');
+		});
+		$clickedEl.find('a').addClass('ptw');
+		playerToWatchName = $clickedEl.find('a span.hidden').text();
+		ptwBenched = true;
+		magicExecutor();
+		if($('#ptw').length > 0) updatePtwTracker();
+}
+
+chrome.extension.sendMessage({}, function (response) {
 	let readyStateCheckInterval = setInterval(function () {
 		if (document.readyState === "complete") {
 			clearInterval(readyStateCheckInterval);			
@@ -240,9 +273,7 @@ function periodChanged(){ //period changed (q3,q4,h1,h2 etc.)
 		cleanup();
 		return;
 	}
-	let curMinsArray;
-	let viewChanged = false;
-	
+	let curMinsArray;	
 	let interval = setInterval(function(){
 		curMinsArray = $($('table tbody')[AWAY]).find('tr td:nth-child(2)');
 		curMinsArray =  curMinsArray.map(function(ind,elm){
@@ -251,18 +282,14 @@ function periodChanged(){ //period changed (q3,q4,h1,h2 etc.)
 
 		if(minsArray.length === 0) minsArray = curMinsArray;
 		for (let i = 0; i < minsArray.length/2; i++) 
-			if(minsArray[i] !== curMinsArray[i])
-				viewChanged = true;
-
-		if(viewChanged){
-			calcTeamStats = false;
-			cleanup();
-			colorHeadersByTeamsColors();
-			magicExecutor();
-			minsArray = curMinsArray;
-			clearInterval(interval);
+			if(minsArray[i] !== curMinsArray[i]){
+				calcTeamStats = false;
+				cleanup();
+				colorHeadersByTeamsColors();
+				magicExecutor();
+				minsArray = curMinsArray;
+				clearInterval(interval);
 		}
-			viewChanged = false;
 	},20);
 }
 
@@ -276,25 +303,81 @@ function handleBoxscoreTab() {
 }
 
 function startChangeDetector() {
+	//TODO: identify ptw's table and narrow mut observers
 	let targetNodes = $("table td");
+	let gameStatusNode = $('.z-10 .w-full div > span')[0];// LIVE || FINAL
 	let MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
-	let myObserver = new MutationObserver(mutationHandler);
-	let obsConfig = { characterData: true, subtree: true };
+	let tableCellsObs = new MutationObserver(livePlusPtwMutationHandler);
+	let gameStatusObs = new MutationObserver(gameStatusMutationHandler);
+	let tableCellsConfig = { characterData: true, subtree: true};
+	let gameStatusConfig = { characterData: true, childList: true}; //TODO: test
 
-	targetNodes.each (function() {
-		myObserver.observe (this, obsConfig);
-	} );
+	targetNodes.each(function() {
+		tableCellsObs.observe(this, tableCellsConfig);
+	});
+	gameStatusObs.observe(gameStatusNode, gameStatusConfig);
 }
-	
-function mutationHandler(mutationRecords) {
-	cleanup();
+
+function gameStatusMutationHandler(mutationRecord) {
+	if(mutationRecord[0].target.textContent === 'FINAL')
+		$('#ptw').text($('#ptw').text() + ' | FINAL |');
+}
+
+function livePlusPtwMutationHandler(mutationRecords) {
+	if(watchPlayer && playerToWatchName){
+		let minutesRecords = [];
+		//get changed minutes columns values
+		for(let i=0 ; i < mutationRecords.length ; i++){
+			let colIndex = $(mutationRecords[i].target.parentElement).index();
+			if(colIndex === 1) //min's played
+				minutesRecords.push(mutationRecords[i].target.parentElement);
+			//TODO: highlight entire player row when his statline updates
+		}
+		if(minutesRecords.length > 0) handlePlayerToWatch(minutesRecords);	
+	}
 	magicExecutor();
 }
 
+function handlePlayerToWatch(minutesRecords){
+	let ptwUpdatedMinsCell;
+	//identify if player to watch's minutes updated
+	for(let record of minutesRecords){
+		let name = $(record).prev().find('a span span')[0].innerText;
+		if(name === playerToWatchName){ //ptw came of the bench - watch the game!
+			if(isLiveGame && ptwBenched) playSound(); 
+			ptwUpdatedMinsCell = record;
+		}
+	}
+	ptwBenched = ptwUpdatedMinsCell === undefined; //update benched status
+	updatePtwTracker();
+}
+
+function updatePtwTracker(){
+	let $tracker = $('#ptw');
+	let ptwMins = $('.ptw').closest('td').next().text();
+	let text = `${playerToWatchName}: ${ptwMins} played`;
+	ptwBenched ? $tracker.removeClass('on') : $tracker.addClass('on');
+	$tracker.text(text);
+}
+
+function playSound() {
+	let url = chrome.runtime.getURL('../../assets/playerin.wav');
+	let audio = new Audio(url);
+    audio.play(); 
+}
+
 function magicExecutor() {
+	cleanup();
 	magic();
 	if(!highlightEnabled) implHighlight();
-	if(shouldAddErecentages) addPrecentages();
+
+	if(isLiveGame && watchPlayer){
+		if(playerToWatchName && $('#ptw').length === 0){
+			let ptwTracker = `<p id="ptw"></p>`;
+			$(ptwTracker).insertAfter($('nav').parent());
+			updatePtwTracker();
+		}
+	}
 }
 
 function implHighlight() {
@@ -367,15 +450,15 @@ function colorHeadersByTeamsColors() {
 	let hMainColor = homeObj[0].mainColor;
 	let hSecColor  = homeObj[0].secondaryColor;
 	
-	let awayBGVal = 'linear-gradient(230deg,' + aSecColor+'aa' + ' 50%, ' + aMainColor+'aa' + ' 85%)';
-	let homeBgVal = 'linear-gradient(230deg,' + hSecColor+'aa' + ' 50%, ' + hMainColor+'aa' + ' 85%)';
+	let awayBGVal = 'linear-gradient(230deg,' + aSecColor+'80' + ' 50%, ' + aMainColor+'80' + ' 85%)';
+	let homeBgVal = 'linear-gradient(230deg,' + hSecColor+'80' + ' 50%, ' + hMainColor+'80' + ' 85%)';
 	let awayTitleBGVal = 'linear-gradient(230deg,' + aSecColor+'cd' + ' 50%, ' + aMainColor+'cd' + ' 85%)';
 	let homeTitleBgVal = 'linear-gradient(230deg,' + hSecColor+'cd' + ' 50%, ' + hMainColor+'cd' + ' 85%)';
 
 	let offset = $('#__next > div:nth-child(2) .p-0 section').length === 2 ? 0 : 1; //finished games has additional section
 	$('#__next > div:nth-child(2) .p-0 section:nth-child(' + (offset+1) +') > div:first-child').css('background', awayTitleBGVal);
 	$('#__next > div:nth-child(2) .p-0 section:nth-child(' + (offset+2) +') > div:first-child').css('background', homeTitleBgVal);
-
+	//color players
 	$(awayTable).find('tbody tr').each(function (i, el) { 
 		$(el).find('td').each(function (i, el) { 
 			if(i === 0)
@@ -415,6 +498,7 @@ function populateMatrix(tableObj) {
 	$(tableObj).find('tr').each((i, currentRow) => {
 		playerStatline = $(currentRow).find('td').map((i, el) => {
 			const $el = $(el);
+			const shift = 2;
 			if (i < 2){
 				if(i === 0) //do not insert name to matrix 
 					return;
@@ -424,8 +508,13 @@ function populateMatrix(tableObj) {
 					$(currentRow).hide();
 					return;
 				}
-			} else
+			} else {
+				if(i === +(COL_MAP['FG%']) + shift || 
+						i === +(COL_MAP['FT%']) + shift ||
+				 			i === +(COL_MAP['3P%']) + shift)
+								$el.addClass('pct');
 				return +($el.text());
+			}
 		});
 		if (playerStatline.length > 0) matrixToReturn.push(playerStatline);
 	});
@@ -440,6 +529,14 @@ function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
 	cssBatchExecutor(matrix, colsToCss, homeAwayIdentifier, 'best-in-category');
 	colorOtherCols(matrix, otherColsToCss, homeAwayIdentifier);
 	if(calcTeamStats) teamStatWizardry(teamStatsArray, teamRow);
+}
+	
+function getMinsByTeam($table) {
+	let playersMinsArr = [];
+	$table.find('tr').each((i, currentRow) => {
+			playersMinsArr.push($(currentRow).find('td:nth-child(2)').text());
+	});
+	return playersMinsArr;
 }
 
 function colorOtherCols(matrix, statCategoryArr, homeAwayIdentifier){
@@ -529,10 +626,10 @@ function extractTeamStatCss(value, isBadRed, bad, nice, great){
 	return cssClasses;
 }
 
-function cssBatchExecutor(matrix, columnsArr, homeAwayIdentifier, classname){
+function cssBatchExecutor(matrix, statCategoryArr, homeAwayIdentifier, classname){
 	let playerIndexesToHighlight = [];
 
-	for (let colTitle of columnsArr) {
+	for (let colTitle of statCategoryArr) {
 		playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP[colTitle], homeAwayIdentifier);
 		cssExecutor(COL_MAP[colTitle], playerIndexesToHighlight, homeAwayIdentifier, classname);
 	}
@@ -671,6 +768,6 @@ function addScrollHandler(){
 function cleanup(){
 	$('#home-headers-wrapper, #away-headers-wrapper').remove();
 	$('td, td a').each(function(){
-		$(this).removeClass('perfect best-in-category noteworthy best-in-team worst ice-cold big');
+		$(this).removeClass('perfect best-in-category noteworthy best-in-team worst ice-cold big pct');
 	});
 }
