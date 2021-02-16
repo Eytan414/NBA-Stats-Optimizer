@@ -15,10 +15,8 @@
 		"assets/power_on.svg", 
 		"assets/power_off.svg", 
 		"assets/power_disabled.svg", 
-		"assets/wizard.png", 
 		"assets/wizard_color.png", 
-		"assets/playerin.wav", 
-		"assets/playerinLoud.wav"
+		"assets/playerin.wav"
 	],
 	"content_scripts": [
 	{

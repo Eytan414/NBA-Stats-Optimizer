@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", function() {
         else{
             document.getElementById('mainPopup').style.display = 'none'; 
             document.getElementById('fallbackPopup').style.display = 'block';
+    
+
         }
     });
 
@@ -15,8 +17,11 @@ document.addEventListener("DOMContentLoaded", function() {
 function handleSwitch(trackPlayer){
     let powerEl = document.getElementById('power');
     
-    if(trackPlayer === -1)//game over
+    if(trackPlayer === -1){//game over
         powerEl.classList.add('disabled');
+        let mainContentEl = document.getElementById('mainContent');
+        mainContentEl.textContent = 'Player tracking option is N/A after ther game is over';
+    }
     else{
         powerEl.addEventListener('click', togglePlayerTrack);
         trackPlayer ?
