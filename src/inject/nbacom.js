@@ -1,26 +1,19 @@
-
-
-//##########################
-//TODO: add all ptw logic ##
-//##########################
-//##########################
-
 chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 	switch(message){
-		case 'activate':
+		case 'ptw-on':
 			watchPlayer = true;
 			if(isLiveGame) setupPTW();
 			break;
-		case 'deactivate':
+		case 'ptw-off':
 			watchPlayer = false;
 			deactivatePtw();
 			break;
-		case 'ptwSwitch':
+		case 'ptwGetSwitchStatus':
 			isLiveGame ? sendResponse(watchPlayer) : sendResponse(-1);
 			break;
 		default:
 			break;
-	}
+		}
 });
 	
 function deactivatePtw(){ 
@@ -259,9 +252,13 @@ const CATEGORY_BEST = 'best-in-category';
 let minsArray = [];
 let calcTeamStats = true;
 let canCalcPeriodChange = true;
-let shouldAddErecentages = false;
 let isLiveGame = false;
 let highlightEnabled = false;
+//player to watch vars:
+let watchPlayer = false;
+let ptwBenched = true;
+let playerToWatchName;
+let ptwInSound;
 
 function tableSrcChanged(){
 	let msg = $('body .msg');

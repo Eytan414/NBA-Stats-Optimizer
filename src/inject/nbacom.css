@@ -36,7 +36,7 @@ a.text-cerulean {
 	text-decoration: underline;
 }
 
-.fixed>:nth-child(3){
+.fixed > div:nth-of-type(3) {
 	display:none;
 }
 

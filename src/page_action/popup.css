@@ -36,17 +36,17 @@ h1, h2 {
 }
 
 #power {
-    background-image: url(../../assets/power_off.svg);
+    background-image: url(../../assets/ui/power_off.svg);
     width: 30px;
     height: 30px;
     margin: 10px auto;
     cursor: pointer;
 }
 #power.on{
-    background-image: url(../../assets/power_on.svg);
+    background-image: url(../../assets/ui/power_on.svg);
 }
 #power.disabled{
-    background-image: url(../../assets/power_disabled.svg) !important;
+    background-image: url(../../assets/ui/power_disabled.svg) !important;
     cursor: default !important;
 }
 
@@ -68,7 +68,7 @@ h1, h2 {
     bottom: 20px;
 }
 #wiz {
-    background-image: url(../../assets/wizard_color.png);
+    background-image: url(../../assets/ui/wizard_color.png);
     background-size: contain;
     background-repeat: no-repeat;
     cursor: help;

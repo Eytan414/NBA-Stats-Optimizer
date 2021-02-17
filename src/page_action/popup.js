@@ -3,13 +3,10 @@ document.addEventListener("DOMContentLoaded", function() {
         let supportedUrl = tabs[0].url.startsWith('https://www.nba.com/game/');
             
         if(supportedUrl){
-            chrome.tabs.sendMessage(tabs[0].id,'ptwSwitch', handleSwitch);
-            }
-        else{
+            chrome.tabs.sendMessage(tabs[0].id,'ptwGetSwitchStatus', handleSwitch);
+        } else{
             document.getElementById('mainPopup').style.display = 'none'; 
             document.getElementById('fallbackPopup').style.display = 'block';
-    
-
         }
     });
 
@@ -33,7 +30,7 @@ function handleSwitch(trackPlayer){
 function togglePlayerTrack(ev){
     let powerBtnClasses = document.getElementById('power').classList;
     powerBtnClasses.toggle('on');
-    let msg = powerBtnClasses.contains('on') ? "activate" : "deactivate";
+    let msg = powerBtnClasses.contains('on') ? "ptw-on" : "ptw-off";
     
     chrome.tabs.query({active:true,currentWindow:true},function(tabs){
         chrome.tabs.sendMessage(tabs[0].id, msg);

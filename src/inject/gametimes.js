@@ -30,7 +30,7 @@ function placeLocalHours(){
 		hour = +hour + 12;
 		let localHour = (hour + offset) % 24;
 		localHour = (localHour+'').padStart(2, '0');
-		let url = chrome.runtime.getURL('../../assets/wizard_color.png');
+		let url = chrome.runtime.getURL('../../assets/ui/wizard_color.png');
 
 		let html = `
 			<div class='local-hour'>(${localHour}:${mins})

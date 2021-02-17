@@ -7,16 +7,18 @@
 	"action": {
 		"default_popup": "src/page_action/popup.html"
 	},  
+	"permissions": [
+		"tabs"
+	],
 	"icons": {
 		"48": "assets/icon48.png",
 		"128": "assets/icon128.png"
 	},
 	"web_accessible_resources": [
-		"assets/power_on.svg", 
-		"assets/power_off.svg", 
-		"assets/power_disabled.svg", 
-		"assets/wizard_color.png", 
-		"assets/playerin.wav"
+		{ 
+			"resources": ["assets/ui/*"],
+			"matches": []
+		}
 	],
 	"content_scripts": [
 	{
