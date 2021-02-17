@@ -248,6 +248,14 @@ const TEAM_COLORS_MAP = [
 ];
 const OFFSET = 3; //compensation for the removed name+min's col's + 1 due to arr begins with 0
 const AWAY = 0; const HOME = 1;
+//css classes
+const RED = 'worst';
+const GREAT = 'great';
+const BIG = 'big';
+const NOTEWORTHY = 'noteworthy';
+const PERFECT = 'perfect';
+const CATEGORY_BEST = 'best-in-category';
+
 let minsArray = [];
 let calcTeamStats = true;
 let canCalcPeriodChange = true;
@@ -522,11 +530,11 @@ function populateMatrix(tableObj) {
 }
 
 function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
-	let colsToCss = ['3P%','FG%','FT%','AST','FGM','3PM','FTM','STL','REB','BLK'];
+	let colsToCss = ['3P%','FG%','FT%','AST','FGM','3PM','FTM','STL','REB','BLK','+/-'];
 	let otherColsToCss = ['PTS','PF','TO'];
 	let teamRow = $($('table tbody')[homeAwayIdentifier]).find('tr:last-child td');
 	
-	cssBatchExecutor(matrix, colsToCss, homeAwayIdentifier, 'best-in-category');
+	cssBatchExecutor(matrix, colsToCss, homeAwayIdentifier, CATEGORY_BEST);
 	colorOtherCols(matrix, otherColsToCss, homeAwayIdentifier);
 	if(calcTeamStats) teamStatWizardry(teamStatsArray, teamRow);
 }
@@ -549,15 +557,15 @@ function colorOtherCols(matrix, statCategoryArr, homeAwayIdentifier){
 		switch(category){
 			case 'PF':
 				playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['PF'], homeAwayIdentifier);
-				cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, 'worst');
+				cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, RED);
 				if(columnArray[playerIndexesToHighlight[0]-1] === 6) //additional highlight on pf column at the first index to check if max = fouled out
-					cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, 'big');
+					cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, BIG);
 				playerIndexesToHighlight = [];
 				break;
 			
 			case 'TO':
 				playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['TO'], homeAwayIdentifier);
-				cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, 'worst');
+				cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, RED);
 				playerIndexesToHighlight = [];
 				break;
 			
@@ -566,11 +574,11 @@ function colorOtherCols(matrix, statCategoryArr, homeAwayIdentifier){
 					if(columnArray[i] > 9)	
 						playerIndexesToHighlight.push(i+1);
 
-				cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, 'noteworthy');
+				cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, NOTEWORTHY);
 
 				//highlight best scorer/s
 				playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['PTS'], homeAwayIdentifier);
-				cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, 'best-in-team');
+				cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, GREAT);
 				break;
 
 				default:
@@ -632,6 +640,10 @@ function cssBatchExecutor(matrix, statCategoryArr, homeAwayIdentifier, classname
 	for (let colTitle of statCategoryArr) {
 		playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP[colTitle], homeAwayIdentifier);
 		cssExecutor(COL_MAP[colTitle], playerIndexesToHighlight, homeAwayIdentifier, classname);
+		if(colTitle === '+/-'){
+			let lowlightIndexes = getMinIndexesInCategory(matrix, COL_MAP[colTitle]);
+			cssExecutor(COL_MAP[colTitle], lowlightIndexes, homeAwayIdentifier, RED);
+		}
 	}
 }
 
@@ -645,6 +657,16 @@ function cssExecutor(column, playerIndexesArray, homeAwayIdentifier, classname){
 			col.find('a').addClass(classname) :
 			col.addClass(classname);
 	}
+}
+
+function getMinIndexesInCategory(matrix, col) {
+	let statsArray = getCol(matrix, col);
+	let minArr = [];
+	let min = Math.min(...statsArray);
+	for(let i = 0 ; i < statsArray.length ; i++)
+		if (statsArray[i] === min)
+			minArr.push(i+1);
+	return minArr;
 }
 
 function getMaxIndexesInCategory(matrix, col, homeAwayIdentifier) {
@@ -672,7 +694,7 @@ function goldAll100s(col, columnArray, homeAwayIdentifier) {
 			columnArray[i] = 0; 
 		}
 	}
-	cssExecutor(col, perfectIndexesArray, homeAwayIdentifier, 'perfect');
+	cssExecutor(col, perfectIndexesArray, homeAwayIdentifier, PERFECT);
 	return columnArray;
 }
 

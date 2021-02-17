@@ -44,11 +44,15 @@ table th, table td {
     text-align: center !important;
 }
 
+table td.pct{
+    font-size: 12px !important;
+}
+
 table td.pct:after{
     content: "%";
-    font-size:11px;
-    position:relative;
-    left: 1px
+    font-size: 10px;
+    position: relative;
+    left: 1px;
 }
 
 table td:first-child,
@@ -107,7 +111,7 @@ td a span {
      font-size: 15px;
 }
 
-tbody tr td.best-in-team{ 
+tbody tr td.great{ 
     font-weight: 'bold';
     color: rgb(0, 200, 0) !important;
     background: #00ff0026 !important;
