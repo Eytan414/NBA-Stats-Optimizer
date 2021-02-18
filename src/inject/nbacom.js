@@ -11,6 +11,9 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 		case 'ptwGetSwitchStatus':
 			isLiveGame ? sendResponse(watchPlayer) : sendResponse(-1);
 			break;
+		case 'setupPrefs':
+			//TODO: add
+			break;
 		default:
 			break;
 		}
@@ -29,6 +32,11 @@ function setupPTW(){
 	});
 	magicExecutor();
 	$('body')[0].style.setProperty('--ptw-grab', 'grab');
+	let url = chrome.runtime.getURL('../../assets/ui/hello.wav');
+	let audioTag = 
+	`<audio id="ptwsound">
+		<source src="${url}" type="audio/wav" />
+	</audio>`;
 }
 
 function rightClickHandler(event){
@@ -40,40 +48,41 @@ function mouseupHandler(event){
 }
 
 function mousedownHandler(event){
-	if(event.button === 2)
-		$('body')[0].style.setProperty('--ptw-grab', 'grabbing');
-		const $clickedEl = $(this);
-		$('table tbody tr td:nth-child(1)').each(function(i, el){
-			$(el).find('a').removeClass('ptw');
-		});
-		$clickedEl.find('a').addClass('ptw');
-		playerToWatchName = $clickedEl.find('a span.hidden').text();
-		ptwBenched = true;
-		magicExecutor();
-		if($('#ptw').length > 0) updatePtwTracker();
+	if(event.button !== 2) return false;
+	const $clickedEl = $(this);
+	let minsVal = $clickedEl.next().text().length;
+	if(minsVal > 5 || minsVal === 1) return false;
+
+	$('body')[0].style.setProperty('--ptw-grab', 'grabbing');
+	$('table tbody tr td:nth-child(1)').each(function(i, el){
+		$(el).find('a').removeClass('ptw');
+	});
+	$clickedEl.find('a').addClass('ptw');
+	playerToWatchName = $clickedEl.find('a span.hidden').text();
+	ptwBenched = true;
+	magicExecutor();
+	if($('#ptw').length > 0) updatePtwTracker();
 }
 
-chrome.extension.sendMessage({}, function (response) {
-	let readyStateCheckInterval = setInterval(function () {
-		if (document.readyState === "complete") {
-			clearInterval(readyStateCheckInterval);			
-			$('section + div ul li a:not(#box-score)').click(function(){ 
-				$('#home-headers-wrapper, #away-headers-wrapper').remove();
-			});
-			
-			if($('.z-10 .w-full div > span').text() === "LIVE"){
-				isLiveGame = true;
-				startChangeDetector();
-			}
-			//handle boxscore tab selected
-			let $boxscoreElem = $('#box-score');
-			if($boxscoreElem.parent().attr('aria-selected') === 'true'){
-				 handleBoxscoreTab(); 
-			}		
-			$boxscoreElem.click(function(){ setTimeout(function(){ magicExecutor(); }, 0); });
-		}
-	}, 10);
-});
+window.onload = function() {
+	let url = chrome.runtime.getURL('../../assets/ui/hello.wav');
+	ptwInSound = new Audio(url);
+
+	$('section + div ul li a:not(#box-score)').click(function(){ 
+		$('#home-headers-wrapper, #away-headers-wrapper').remove();
+	});
+	
+	if($('.z-10 .w-full div > span').text() === "LIVE"){
+		isLiveGame = true;
+		startChangeDetector();
+	}
+	//handle boxscore tab selected
+	let $boxscoreElem = $('#box-score');
+	if($boxscoreElem.parent().attr('aria-selected') === 'true'){
+		handleBoxscoreTab(); 
+	}		
+	$boxscoreElem.click(function(){ setTimeout(function(){ handleBoxscoreTab(); }, 0); });
+};
 
 const COL_MAP = {
 	'FGM' : '0',	'FGA' : '1',
@@ -366,9 +375,7 @@ function updatePtwTracker(){
 }
 
 function playSound() {
-	let url = chrome.runtime.getURL('../../assets/playerin.wav');
-	let audio = new Audio(url);
-    audio.play(); 
+	ptwInSound.play(); 
 }
 
 function magicExecutor() {

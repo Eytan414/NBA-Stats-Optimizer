@@ -1,22 +1,33 @@
 <head>
-	<link rel="stylesheet" href="popup.css" type="text/css">
-	<script src="popup.js"></script>
+	<link rel='stylesheet' href='popup.css' type='text/css'>
+	<script src='popup.js'></script>
 </head>
 <body>
-	<div id="mainPopup">
-		<div id="mainContent">
+	<div id='mainPopup'>
+		<div id='mainContent'>
 			<h1>NBA Stats Wizard</h1>	
-			<h2>Activate player tracking:</h2>
-			<div id="power"></div>
+			<h2>Player tracking:</h2>
+			<div id='power'></div>
 			<div>(When enabled: hover on a player's cell and right click on it)</div>
 			<div>*disable to enjoy faster algorithm </div>
+			<hr>
+			<div class='global-settings'>
+				<h2>Global Settings</h2>
+				<div class="toggles">
+					<!-- TODO: add styled tooltip -->
+					<span title='blink when the table stats have refreshed'>blink</span>
+					<input id='blink' type='image'/>
+					<span title='do not add team colors'>team color</span>
+					<input id='teamcolor' type='image'/>
+				</div>
+			</div>
 		</div>
 	</div>
-	<div id="fallbackPopup">
+	<div id='fallbackPopup'>
 		<h1>NBA Stats Wizard</h1>
 		<div>Popup isn't available in this page</div>
-		<div class="wiz-wrapper">
-			<div id="wiz"></div>			
+		<div class='wiz-wrapper'>
+			<div id='wiz'></div>			
 		</div>			
 	</div>
 </body>
