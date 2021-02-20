@@ -58,7 +58,7 @@ function placeLocalHours(){
 	.local-hour span {
 		display: none;
 		width: 240px;
-		background-color: #222;
+		background-color: #eee;
 		color: #5f87e6;
 		text-align: center;
 		border-radius: 10px;

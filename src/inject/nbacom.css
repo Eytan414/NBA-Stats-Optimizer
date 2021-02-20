@@ -205,3 +205,22 @@ span span:first-child {
                   -1px 1px 0 #2a2a2a,
                   1px 1px 0 #2a2a2a;
 }
+
+.blink{
+    -webkit-animation-name: flash;
+    -webkit-animation-duration: 400ms;
+    -webkit-animation-iteration-count: 1;
+    -webkit-animation-timing-function: ease-in-out;
+}
+
+@-webkit-keyframes flash {
+    0%, 100% {
+        opacity: 1;
+        background-color: initial;
+    }
+    
+    50% {
+        opacity: 0;
+        background-color: #ffffff50;
+    }
+}

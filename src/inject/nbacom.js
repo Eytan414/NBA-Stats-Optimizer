@@ -3,22 +3,38 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 		case 'ptw-on':
 			watchPlayer = true;
 			if(isLiveGame) setupPTW();
-			break;
+			return true;
 		case 'ptw-off':
 			watchPlayer = false;
 			deactivatePtw();
-			break;
+			return true;
 		case 'ptwGetSwitchStatus':
 			isLiveGame ? sendResponse(watchPlayer) : sendResponse(-1);
-			break;
-		case 'setupPrefs':
-			//TODO: add
-			break;
+			return true;
 		default:
-			break;
-		}
+			if(message.blink !== undefined)
+				updateBlink();
+			if(message.teamcolor !== undefined)
+				updateTeamcolor();
+			return true;
+	}
 });
 	
+function updateBlink(){ 
+	chrome.storage.sync.get(['blink'], function(val){
+		blinkOn = val.blink;
+	});
+}
+
+function updateTeamcolor(){ 
+	chrome.storage.sync.get(['teamcolor'], function(val){
+		teamcolorOn = val.teamcolor;
+		teamcolorOn ?
+			colorHeadersByTeamsColors() :
+			cleanHeadersByTeamsColors() ;
+	});
+}
+
 function deactivatePtw(){ 
 	//TODO: implement logic bla bla
 }
@@ -67,7 +83,6 @@ function mousedownHandler(event){
 window.onload = function() {
 	let url = chrome.runtime.getURL('../../assets/ui/hello.wav');
 	ptwInSound = new Audio(url);
-
 	$('section + div ul li a:not(#box-score)').click(function(){ 
 		$('#home-headers-wrapper, #away-headers-wrapper').remove();
 	});
@@ -76,12 +91,19 @@ window.onload = function() {
 		isLiveGame = true;
 		startChangeDetector();
 	}
+
 	//handle boxscore tab selected
 	let $boxscoreElem = $('#box-score');
-	if($boxscoreElem.parent().attr('aria-selected') === 'true'){
-		handleBoxscoreTab(); 
-	}		
 	$boxscoreElem.click(function(){ setTimeout(function(){ handleBoxscoreTab(); }, 0); });
+	
+	chrome.storage.sync.get(['blink','teamcolor'], function(val){
+		blinkOn = val.blink ?? false;
+		teamcolorOn = val.teamcolor ?? true;
+		if($boxscoreElem.parent().attr('aria-selected') === 'true'){
+			handleBoxscoreTab(); 
+		}		
+	});
+
 };
 
 const COL_MAP = {
@@ -268,6 +290,9 @@ let watchPlayer = false;
 let ptwBenched = true;
 let playerToWatchName;
 let ptwInSound;
+//userPreferences:
+let blinkOn;
+let teamcolorOn;
 
 function tableSrcChanged(){
 	let msg = $('body .msg');
@@ -338,6 +363,7 @@ function gameStatusMutationHandler(mutationRecord) {
 }
 
 function livePlusPtwMutationHandler(mutationRecords) {
+	bodyBlink();
 	if(watchPlayer && playerToWatchName){
 		let minutesRecords = [];
 		//get changed minutes columns values
@@ -445,6 +471,7 @@ function implHighlight() {
 }
 
 function colorHeadersByTeamsColors() {
+	if(!teamcolorOn) return;
 	let [awayTable, homeTable] = $('table');
 	let [awayTeam, homeTeam] = $('h1 span');
 	awayTeam = $(awayTeam).text();
@@ -481,6 +508,26 @@ function colorHeadersByTeamsColors() {
 		$(el).find('td').each(function (i, el) { 
 			if(i === 0)
 				$(el).css('background', homeBgVal);
+		});
+	});
+
+}
+function cleanHeadersByTeamsColors() {
+	let [awayTable, homeTable] = $('table');
+	let offset = $('#__next > div:nth-child(2) .p-0 section').length === 2 ? 0 : 1; //finished games has additional section
+	$('#__next > div:nth-child(2) .p-0 section:nth-child(' + (offset+1) +') > div:first-child').css('background', 'white');
+	$('#__next > div:nth-child(2) .p-0 section:nth-child(' + (offset+2) +') > div:first-child').css('background', 'white');
+	//color players
+	$(awayTable).find('tbody tr').each(function (i, el) { 
+		$(el).find('td').each(function (i, el) { 
+			if(i === 0)
+				$(el).css('background', 'white');
+		});
+	});
+	$(homeTable).find('tbody tr').each(function (i, el) { 
+		$(el).find('td').each(function (i, el) { 
+			if(i === 0)
+				$(el).css('background', 'white');
 		});
 	});
 
@@ -789,6 +836,14 @@ function addScrollHandler(){
 			$homeTableStickyElem.css('opacity', '0');
 		}
 	}); 
+}
+
+function bodyBlink(){ 
+	if(!blinkOn) return;
+	$("body").removeClass("blink");
+	setTimeout(function() {
+		$("body").addClass("blink");
+	}, 1);
 }
 
 function cleanup(){
