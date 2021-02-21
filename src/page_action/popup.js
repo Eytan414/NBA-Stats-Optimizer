@@ -5,14 +5,14 @@ document.addEventListener("DOMContentLoaded", function() {
         if(supportedUrl){
             chrome.tabs.sendMessage(tabs[0].id,'ptwGetSwitchStatus', setupSwitch);
         } else{
-            document.getElementById('mainPopup').style.display = 'none'; 
             document.getElementById('fallbackPopup').style.display = 'block';
         }
     });
-
+    
 });
 
 async function setupSwitch(trackPlayer){
+    document.getElementById('mainPopup').style.display = 'block'; 
     let powerEl = document.getElementById('power');
     
     if(trackPlayer === -1){//game over

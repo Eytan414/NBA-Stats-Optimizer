@@ -53,6 +53,8 @@ function setupPTW(){
 	`<audio id="ptwsound">
 		<source src="${url}" type="audio/wav" />
 	</audio>`;
+	$('body').prepend(audioTag);
+	
 }
 
 function rightClickHandler(event){
@@ -81,8 +83,6 @@ function mousedownHandler(event){
 }
 
 window.onload = function() {
-	let url = chrome.runtime.getURL('../../assets/ui/hello.wav');
-	ptwInSound = new Audio(url);
 	$('section + div ul li a:not(#box-score)').click(function(){ 
 		$('#home-headers-wrapper, #away-headers-wrapper').remove();
 	});
@@ -289,7 +289,6 @@ let highlightEnabled = false;
 let watchPlayer = false;
 let ptwBenched = true;
 let playerToWatchName;
-let ptwInSound;
 //userPreferences:
 let blinkOn;
 let teamcolorOn;
@@ -349,7 +348,7 @@ function startChangeDetector() {
 	let tableCellsObs = new MutationObserver(livePlusPtwMutationHandler);
 	let gameStatusObs = new MutationObserver(gameStatusMutationHandler);
 	let tableCellsConfig = { characterData: true, subtree: true};
-	let gameStatusConfig = { characterData: true, childList: true}; //TODO: test
+	let gameStatusConfig = { characterData: true, childList: true, subtree: true}; //TODO: test
 
 	targetNodes.each(function() {
 		tableCellsObs.observe(this, tableCellsConfig);
@@ -401,7 +400,7 @@ function updatePtwTracker(){
 }
 
 function playSound() {
-	ptwInSound.play(); 
+	document.getElementById('ptwsound').play(); 
 }
 
 function magicExecutor() {
