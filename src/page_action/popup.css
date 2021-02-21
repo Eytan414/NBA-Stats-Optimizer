@@ -48,6 +48,9 @@ h1, h2 {
     cursor: pointer;
     filter: drop-shadow(0px 0px 1px black);
 }
+#power:hover{
+    transform: scale(1.2);
+}
 #power.on{
     background-image: url(../../assets/ui/power_on.svg);
 }
@@ -60,12 +63,12 @@ h1, h2 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
-    justify-items: center;
 }
-.global-settings .toggles span{
+.global-settings .toggles div{
     font-size: 16px;
     margin: 10px 0;
     cursor: help;
+    justify-self: start;
 }
 
 input#blink, input#teamcolor{
@@ -77,4 +80,32 @@ input#blink, input#teamcolor{
     height: 20px;
     display: inline-block;
     align-self: center;
+    justify-self: center;
+}
+
+.tooltip {
+    display: inline-block;
+    cursor: help;
+}
+.tooltip::after{
+    display: none;
+    background-color: #888;
+    color: #17408b;
+    text-align: center;
+    border-radius: 10px;
+    border: 2px solid #5f87e6;
+    padding: 10px 5px;
+    font-family: cursive;
+    z-index:1;
+    position: absolute;
+    width: 80%;
+}
+.tooltip:hover::after{
+    display: block;
+}
+.blink::after{
+    content: 'Blink screen (flash) when the table stats have refreshed';
+}
+.teamcolor::after{
+    content: 'Do not add team colors';
 }
