@@ -18,7 +18,7 @@ async function setupSwitch(trackPlayer){
     if(trackPlayer === -1){//game over
         powerEl.classList.add('disabled');
         let mainContentEl = document.getElementById('mainContent');
-        mainContentEl.textContent = 'Player tracking option is N/A after ther game is over';
+        mainContentEl.textContent = 'Player tracking option is available only on live games';
     }
     else{
         powerEl.addEventListener('click', togglePlayerTrack);

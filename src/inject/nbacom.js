@@ -42,18 +42,19 @@ function deactivatePtw(){
 
 function setupPTW(){
 	$('table tbody tr td:nth-child(1)').each(function(i, el){ //add right click event on name columns
-		$(el).on("mousedown", mousedownHandler);
-		$(el).on("mouseup", mouseupHandler);
-		$(el).on("contextmenu", rightClickHandler);
+		$(el).on('mousedown', mousedownHandler);
+		$(el).on('mouseup', mouseupHandler);
+		$(el).on('contextmenu', rightClickHandler);
 	});
 	magicExecutor();
-	$('body')[0].style.setProperty('--ptw-grab', 'grab');
 	let url = chrome.runtime.getURL('../../assets/ui/hello.wav');
 	let audioTag = 
 	`<audio id="ptwsound">
-		<source src="${url}" type="audio/wav" />
+	<source src="${url}" type="audio/wav" />
 	</audio>`;
-	$('body').prepend(audioTag);
+	let $body = $('body');
+	$body.prepend(audioTag);
+	$body[0].style.setProperty('--ptw-grab', 'grab');
 	
 }
 
@@ -342,7 +343,7 @@ function handleBoxscoreTab() {
 
 function startChangeDetector() {
 	//TODO: identify ptw's table and narrow mut observers
-	let targetNodes = $("table td");
+	let targetNodes = $('table td');
 	let gameStatusNode = $('.z-10 .w-full div > span')[0];// LIVE || FINAL
 	let MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 	let tableCellsObs = new MutationObserver(livePlusPtwMutationHandler);
@@ -357,8 +358,10 @@ function startChangeDetector() {
 }
 
 function gameStatusMutationHandler(mutationRecord) {
-	if(mutationRecord[0].target.textContent === 'FINAL')
-		$('#ptw').text($('#ptw').text() + ' | FINAL |');
+	if(mutationRecord[0].target.textContent === 'FINAL'){
+		let $ptw = $('#ptw');
+		$ptw.text($ptw.text() + ' | FINAL |');
+	}
 }
 
 function livePlusPtwMutationHandler(mutationRecords) {
@@ -425,13 +428,13 @@ function implHighlight() {
 			let isAwayTable = $($('table')[AWAY])[0] === $(this).closest('table')[0];
 			let tableObj = isAwayTable ? $('table')[AWAY] : $('table')[HOME];
 			
-			$(tableObj).find('tbody tr:nth-child(' + rowIndex + ') td').each(function (i) { //get stat entire row
+			$(tableObj).find('tbody tr:nth-child(' + rowIndex + ') td').each(function (i) { //get entire stat row
 				if(i === 0)
 					$(this).addClass('zoomed');
 				$(this).addClass('highlight');
 			});
 			
-			//handle sticky headers + column highlighting
+			//handle column + sticky headers highlighting
 			let headerSelector = isAwayTable ? 
 				'#away-headers-wrapper .col' + columnIndex :
 				'#home-headers-wrapper .col' + (columnIndex+21);		
@@ -533,15 +536,15 @@ function cleanHeadersByTeamsColors() {
 }
 
 function magic(){
-	let [awaytable,hometable] = $('table tbody');
+	let [awaytable, hometable] = $('table tbody');
 	
 	let awayMatrix = populateMatrix(awaytable);
 	let awayTeamStats = awayMatrix.pop();
-	masterCssWizardry(awayMatrix, awayTeamStats, AWAY);
+	masterCssWizardry(awayMatrix, awayTeamStats, AWAY, awaytable);
 	
 	let homeMatrix = populateMatrix(hometable);
 	let homeTeamStats = homeMatrix.pop();
-	masterCssWizardry(homeMatrix, homeTeamStats, HOME);	
+	masterCssWizardry(homeMatrix, homeTeamStats, HOME, hometable);	
 
 	setTimeout(function(){
 		fixHeaders('away');
@@ -579,25 +582,25 @@ function populateMatrix(tableObj) {
 	return matrixToReturn;
 }
 
-function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier){
+function masterCssWizardry(matrix, teamStatsArray, homeAwayIdentifier, $table){
 	let colsToCss = ['3P%','FG%','FT%','AST','FGM','3PM','FTM','STL','REB','BLK','+/-'];
 	let otherColsToCss = ['PTS','PF','TO'];
-	let teamRow = $($('table tbody')[homeAwayIdentifier]).find('tr:last-child td');
+	let teamRow = $($table).find('tr:last-child td');
 	
-	cssBatchExecutor(matrix, colsToCss, homeAwayIdentifier, CATEGORY_BEST);
-	colorOtherCols(matrix, otherColsToCss, homeAwayIdentifier);
+	cssBatchExecutor(matrix, colsToCss, homeAwayIdentifier, CATEGORY_BEST, $table);
+	colorOtherCols(matrix, otherColsToCss, homeAwayIdentifier, $table);
 	if(calcTeamStats) teamStatWizardry(teamStatsArray, teamRow);
 }
 	
 function getMinsByTeam($table) {
 	let playersMinsArr = [];
 	$table.find('tr').each((i, currentRow) => {
-			playersMinsArr.push($(currentRow).find('td:nth-child(2)').text());
+		playersMinsArr.push($(currentRow).find('td:nth-child(2)').text());
 	});
 	return playersMinsArr;
 }
 
-function colorOtherCols(matrix, statCategoryArr, homeAwayIdentifier){
+function colorOtherCols(matrix, statCategoryArr, homeAwayIdentifier, $table){
 	let playerIndexesToHighlight = [];
 
 	for (let i = 0; i < statCategoryArr.length; i++) {
@@ -607,15 +610,15 @@ function colorOtherCols(matrix, statCategoryArr, homeAwayIdentifier){
 		switch(category){
 			case 'PF':
 				playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['PF'], homeAwayIdentifier);
-				cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, RED);
+				cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, RED, $table);
 				if(columnArray[playerIndexesToHighlight[0]-1] === 6) //additional highlight on pf column at the first index to check if max = fouled out
-					cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, BIG);
+					cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, BIG, $table);
 				playerIndexesToHighlight = [];
 				break;
 			
 			case 'TO':
 				playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['TO'], homeAwayIdentifier);
-				cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, RED);
+				cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, RED, $table);
 				playerIndexesToHighlight = [];
 				break;
 			
@@ -624,11 +627,11 @@ function colorOtherCols(matrix, statCategoryArr, homeAwayIdentifier){
 					if(columnArray[i] > 9)	
 						playerIndexesToHighlight.push(i+1);
 
-				cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, NOTEWORTHY);
+				cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, NOTEWORTHY, $table);
 
 				//highlight best scorer/s
 				playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['PTS'], homeAwayIdentifier);
-				cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, GREAT);
+				cssExecutor(COL_MAP['PTS'], playerIndexesToHighlight, homeAwayIdentifier, GREAT, $table);
 				break;
 
 				default:
@@ -684,27 +687,28 @@ function extractTeamStatCss(value, isBadRed, bad, nice, great){
 	return cssClasses;
 }
 
-function cssBatchExecutor(matrix, statCategoryArr, homeAwayIdentifier, classname){
+function cssBatchExecutor(matrix, statCategoryArr, homeAwayIdentifier, classname, $table){
 	let playerIndexesToHighlight = [];
 
 	for (let colTitle of statCategoryArr) {
 		playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP[colTitle], homeAwayIdentifier);
-		cssExecutor(COL_MAP[colTitle], playerIndexesToHighlight, homeAwayIdentifier, classname);
+		cssExecutor(COL_MAP[colTitle], playerIndexesToHighlight, homeAwayIdentifier, classname, $table);
 		if(colTitle === '+/-'){
 			let lowlightIndexes = getMinIndexesInCategory(matrix, COL_MAP[colTitle]);
-			cssExecutor(COL_MAP[colTitle], lowlightIndexes, homeAwayIdentifier, RED);
+			cssExecutor(COL_MAP[colTitle], lowlightIndexes, homeAwayIdentifier, RED, $table);
 		}
 	}
 }
 
-function cssExecutor(column, playerIndexesArray, homeAwayIdentifier, classname){
+function cssExecutor(column, playerIndexesArray, homeAwayIdentifier, classname, $table){
+	let table = $table ?? $('table tbody')[homeAwayIdentifier]; //find table if doesn't exists (such as gold100s)
 	for (let i = 0 ; i < playerIndexesArray.length ; i++){
-		let table = $($('table tbody')[homeAwayIdentifier]);
 		let row = $(table).find('tr:nth-child(' + playerIndexesArray[i] + ')');
 		let col = $(row).find('td:nth-child(' + (+column+OFFSET) + ')');
 
-		col.find('a').length > 0 ?
-			col.find('a').addClass(classname) :
+		let nestedAnchor = col.find('a');
+		nestedAnchor.length > 0 ?
+			nestedAnchor.addClass(classname) :
 			col.addClass(classname);
 	}
 }
@@ -724,7 +728,7 @@ function getMaxIndexesInCategory(matrix, col, homeAwayIdentifier) {
 	let maxArr = [];
 	let max = Math.max(...columnArray);
 	if(max === 100) //if scored 100% - gold respective cell and update array so it won't affect "regular" highlighting
-		columnArray = goldAll100s(col, columnArray,homeAwayIdentifier);
+		columnArray = goldAll100s(col, columnArray, homeAwayIdentifier);
 
 	max = Math.max(...columnArray); //after zero-ing perfect
 	if (max !== 0){
@@ -762,6 +766,7 @@ function fixHeaders(homeAwayIdentifier){
 	$('#' + homeAwayIdentifier + '-headers-wrapper').css('opacity', '0');
 	let start = homeAwayIdentifier === 'away' ? 0 : cols.length/2;
 	let end = homeAwayIdentifier === 'away' ? cols.length/2 : cols.length;
+	let $head = $('head');
 	for (let i = start ; i < end; i++) {
 		const $cur = $(cols[i]);
 		let text = $cur.text();	
@@ -794,7 +799,7 @@ function fixHeaders(homeAwayIdentifier){
 				<span class="colhead${i}"></span>
 			</div>`);	
 		
-		$('head').prepend(`
+		$head.prepend(`
 			<style>
 				.col${i} { ${css} }
 				.colhead${i} { ${colheadcss} }
@@ -839,9 +844,11 @@ function addScrollHandler(){
 
 function bodyBlink(){ 
 	if(!blinkOn) return;
-	$("body").removeClass("blink");
+	let $body = $('body')
+	
+	$body.removeClass('blink');
 	setTimeout(function() {
-		$("body").addClass("blink");
+		$body.addClass('blink');
 	}, 1);
 }
 

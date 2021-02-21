@@ -14,7 +14,9 @@ body{
     box-shadow:  10px 10px 20px 3px #4c85e180,
                 -10px -10px 20px 10px #4c85e180;
 }
-
+hr{
+    margin: 20px 0;
+}
 #mainPopup h1{
     color: #17408b;
     text-shadow: -1px -1px 0 #bbb, 1px -1px 0 #bbb,
@@ -25,8 +27,8 @@ body{
     text-shadow: -1px -1px 0 #555, 1px -1px 0 #555,
                 -1px 1px 0 #555 , 1px 1px 0 #555
 }
-#mainPopup #power ~ div{
-    width: 200px;
+#mainPopup {
+    width: 240px;
 }
 #fallbackPopup, #mainPopup{
     display: none;
@@ -36,7 +38,7 @@ body{
 }
 
 h1, h2 {
-    margin: 5px 0;
+    margin: -5px 0 10px;
     text-align: center;
 }
 
@@ -104,8 +106,8 @@ input#blink, input#teamcolor{
     display: block;
 }
 .blink::after{
-    content: 'Blink screen (flash) when the table stats have refreshed';
+    content: 'Blink screen (flash) whenever the stats table refreshes';
 }
 .teamcolor::after{
-    content: 'Do not add team colors';
+    content: 'Color headers by team colors';
 }
