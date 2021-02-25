@@ -84,6 +84,7 @@ function mousedownHandler(event){
 }
 
 window.onload = function() {
+	//remove sticky headers on irrelevant tabs
 	$('section + div ul li a:not(#box-score)').click(function(){ 
 		$('#home-headers-wrapper, #away-headers-wrapper').remove();
 	});
@@ -91,6 +92,7 @@ window.onload = function() {
 	if($('.z-10 .w-full div > span').text() === "LIVE"){
 		isLiveGame = true;
 		startChangeDetector();
+		prevMillis = new Date().getTime();
 	}
 
 	//handle boxscore tab selected
@@ -271,15 +273,21 @@ const TEAM_COLORS_MAP = [
 		'secondaryColor': '#c8102e'
 	}
 ];
-const OFFSET = 3; //compensation for the removed name+min's col's + 1 due to arr begins with 0
-const AWAY = 0; const HOME = 1;
+const OFFSET = 3; //compensation for the removed name+min's col's + 1 due to arr begins on 0
+const AWAY = 0;
+const HOME = 1;
+const MIN_INTERVAL = 1000 * 10;
+
 //css classes
-const RED = 'worst';
+const BAD = 'worst';
 const GREAT = 'great';
 const BIG = 'big';
 const NOTEWORTHY = 'noteworthy';
 const PERFECT = 'perfect';
 const CATEGORY_BEST = 'best-in-category';
+const TEAM_GREAT = 'team-great';
+const DEFAULT_COLOR = 'default-color';
+const COLD = 'ice-cold';
 
 let minsArray = [];
 let calcTeamStats = true;
@@ -290,6 +298,7 @@ let highlightEnabled = false;
 let watchPlayer = false;
 let ptwBenched = true;
 let playerToWatchName;
+let prevMillis;
 //userPreferences:
 let blinkOn;
 let teamcolorOn;
@@ -365,6 +374,10 @@ function gameStatusMutationHandler(mutationRecord) {
 }
 
 function livePlusPtwMutationHandler(mutationRecords) {
+	let millis = new Date().getTime();
+	// prevMillis ?? millis; shouldn't be necessary
+	if(millis - prevMillis < MIN_INTERVAL) return;
+	
 	bodyBlink();
 	if(watchPlayer && playerToWatchName){
 		let minutesRecords = [];
@@ -610,7 +623,7 @@ function colorOtherCols(matrix, statCategoryArr, homeAwayIdentifier, $table){
 		switch(category){
 			case 'PF':
 				playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['PF'], homeAwayIdentifier);
-				cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, RED, $table);
+				cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, BAD, $table);
 				if(columnArray[playerIndexesToHighlight[0]-1] === 6) //additional highlight on pf column at the first index to check if max = fouled out
 					cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, BIG, $table);
 				playerIndexesToHighlight = [];
@@ -618,7 +631,7 @@ function colorOtherCols(matrix, statCategoryArr, homeAwayIdentifier, $table){
 			
 			case 'TO':
 				playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP['TO'], homeAwayIdentifier);
-				cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, RED, $table);
+				cssExecutor(COL_MAP[category], playerIndexesToHighlight, homeAwayIdentifier, BAD, $table);
 				playerIndexesToHighlight = [];
 				break;
 			
@@ -672,17 +685,17 @@ function teamStatWizardry(teamStatsArray, teamRow){
 function extractTeamStatCss(value, isBadRed, bad, nice, great){
 	let cssClasses = '';
 	if(value <= bad)
-		isBadRed ? cssClasses += ' worst' : cssClasses += ' ice-cold'; 
+		isBadRed ? cssClasses += ' ' + BAD : cssClasses += ' ' + COLD; 
 	else
-		cssClasses += ' default-color'
+		cssClasses += ' ' + DEFAULT_COLOR;
 	
 	if(value >= nice){
-		cssClasses += ' big';
+		cssClasses += ' ' + BIG;
 	}
 	if(value >= great)
-		cssClasses += ' best-in-category';
+		cssClasses += ' ' + TEAM_GREAT;
 	if(value === 100)
-		cssClasses += ' perfect';
+		cssClasses += ' ' + PERFECT;
 
 	return cssClasses;
 }
@@ -695,7 +708,7 @@ function cssBatchExecutor(matrix, statCategoryArr, homeAwayIdentifier, classname
 		cssExecutor(COL_MAP[colTitle], playerIndexesToHighlight, homeAwayIdentifier, classname, $table);
 		if(colTitle === '+/-'){
 			let lowlightIndexes = getMinIndexesInCategory(matrix, COL_MAP[colTitle]);
-			cssExecutor(COL_MAP[colTitle], lowlightIndexes, homeAwayIdentifier, RED, $table);
+			cssExecutor(COL_MAP[colTitle], lowlightIndexes, homeAwayIdentifier, BAD, $table);
 		}
 	}
 }

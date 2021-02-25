@@ -101,7 +101,7 @@ td a span {
     z-index: 20;
 }
 
-.best-in-category{
+td.best-in-category{
     font-weight: bold;
     color: rgb(0, 200, 0) !important;
 }
@@ -110,7 +110,10 @@ td a span {
     font-weight: bold;
      font-size: 15px;
 }
-
+td.team-great{ 
+    background: rgba(0, 255, 0, 0.15) !important;
+    border-radius: 20px;
+}
 tbody tr td.great{ 
     font-weight: 'bold';
     color: rgb(0, 200, 0) !important;
