@@ -95,18 +95,21 @@ window.onload = function() {
 		prevMillis = new Date().getTime();
 	}
 
-	//handle boxscore tab selected
-	let $boxscoreElem = $('#box-score');
-	$boxscoreElem.click(function(){ setTimeout(function(){ handleBoxscoreTab(); }, 0); });
-	
-	chrome.storage.sync.get(['blink','teamcolor'], function(val){
-		blinkOn = val.blink ?? false;
-		teamcolorOn = val.teamcolor ?? true;
-		if($boxscoreElem.parent().attr('aria-selected') === 'true'){
-			handleBoxscoreTab(); 
-		}		
-	});
-
+	$('body').on({
+		onload: function(){
+			//handle boxscore tab selected
+			let $boxscoreElem = $('#box-score');
+			$boxscoreElem.click(function(){ setTimeout(function(){ handleBoxscoreTab(); }, 0); });
+			
+			chrome.storage.sync.get(['blink','teamcolor'], function(val){
+				blinkOn = val.blink ?? false;
+				teamcolorOn = val.teamcolor ?? true;
+				if($boxscoreElem.parent().attr('aria-selected') === 'true'){
+					handleBoxscoreTab(); 
+				}		
+			});
+		}
+	}, '#box-score')
 };
 
 const COL_MAP = {
@@ -307,6 +310,10 @@ function tableSrcChanged(){
 	let msg = $('body .msg');
 	msg.show();
 	setTimeout(function() { msg.hide(); }, 5000);
+
+	let elmOpts = this.event.srcElement.options;
+	let tableSrc = elmOpts[elmOpts.selectedIndex].value;
+	//TODO: add clauses according to table source
 	cleanup();
 	$('#away-headers-wrapper,#home-headers-wrapper').remove();
 	canCalcPeriodChange = false;
@@ -451,9 +458,9 @@ function implHighlight() {
 			let headerSelector = isAwayTable ? 
 				'#away-headers-wrapper .col' + columnIndex :
 				'#home-headers-wrapper .col' + (columnIndex+21);		
-			$(headerSelector).addClass('zoomed');
+			$(headerSelector).addClass('col-zoomed');
 
-			$(tableObj).find('thead th:nth-child('+ (columnIndex+1) + ')').addClass('zoomed');
+			$(tableObj).find('thead th:nth-child('+ (columnIndex+1) + ')').addClass('col-zoomed');
 			$(tableObj).find('tbody tr').each(function (i, node) {
 				$(node).find('td').eq(columnIndex).addClass('highlight');
 			});
@@ -473,9 +480,9 @@ function implHighlight() {
 				let headerSelector = isAwayTable ? 
 					'#away-headers-wrapper .col' + columnIndex :
 					'#home-headers-wrapper .col' + (columnIndex+21);		
-				$(headerSelector).removeClass('zoomed');
+				$(headerSelector).removeClass('col-zoomed');
 
-				$(tableObj).find('thead th:nth-child('+ (columnIndex+1) + ')').removeClass('zoomed');
+				$(tableObj).find('thead th:nth-child('+ (columnIndex+1) + ')').removeClass('col-zoomed');
 				$(tableObj).find('tbody tr').each(function (i, node) {
 					$(node).find('td').eq(columnIndex).removeClass('highlight');
 				});

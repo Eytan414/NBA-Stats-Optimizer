@@ -44,7 +44,7 @@ table th, table td {
     text-align: center !important;
 }
 
-table td.pct{
+table td.pct:not(.big){
     font-size: 12px !important;
 }
 
@@ -125,20 +125,20 @@ tbody tr td.great{
     color: var(--font-color) !important;
 }
 
-.worst{ 
+td.worst{ 
     font-weight: bold;
     color: red !important;
 }
-.ice-cold{
+td.ice-cold{
     color: #5d7eff !important;
 }
 
-.perfect{ 
+table td.perfect{ 
     color: gold !important;
     font-weight: bold;
 }
 
-.big{
+td.big{
     font-size: 17px !important;
 }
 
@@ -156,6 +156,9 @@ tbody tr td.great{
 }
 .zoomed{
     transform: scale(1.05);
+}
+.col-zoomed{
+    transform: scale(1.15);
 }
 
 #ptw{

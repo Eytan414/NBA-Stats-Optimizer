@@ -19,6 +19,12 @@ Hope you'll enjoy it!
 
 Changelog:
 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+➤ 1.3.0:
+<!-- TODO: fill -->
+    • |🌟New| Add popup etc 
+    • |🌟New| Add percentages in each fg%, 3pt% and ft% column
+
+
 ➤ 1.2.2:
     • |📈Update| localized time displayed in 24 hour format to avoid ambiguity
     • |🛠️Fix| sluggish row/column highlight when staying in a live game page for a long time without refreshing.
