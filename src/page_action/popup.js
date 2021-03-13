@@ -15,10 +15,7 @@ async function setupSwitch(trackPlayer){
     document.getElementById('mainPopup').style.display = 'block'; 
     let mainContentEl = document.getElementById('mainContent');
     
-    if(trackPlayer === -1){//game over
-        powerEl.classList.add('disabled');
-        mainContentEl.textContent = 'Player tracking option is available only on live games';
-    } else{
+    if(trackPlayer !== -1){//game over
         mainContentEl.innerHTML = `
         <h2>Player tracking:</h2>
         <div id='power'></div>
@@ -30,6 +27,8 @@ async function setupSwitch(trackPlayer){
         trackPlayer ?
         powerEl.classList.add('on'):
         powerEl.classList.remove('on');
+    } else {
+        mainContentEl.textContent = 'Player tracking option is available only on live games';
     }
     clearInterval(interval);
 }

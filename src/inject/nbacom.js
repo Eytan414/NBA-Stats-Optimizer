@@ -15,7 +15,7 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 			if(message.blink !== undefined)
 				updateBlink();
 			if(message.teamcolor !== undefined)
-				updateTeamcolor();
+				updateTeamcolorPreference();
 			return true;
 	}
 });
@@ -26,7 +26,7 @@ function updateBlink(){
 	});
 }
 
-function updateTeamcolor(){ 
+function updateTeamcolorPreference(){ 
 	chrome.storage.sync.get(['teamcolor'], function(val){
 		teamcolorOn = val.teamcolor;
 		teamcolorOn ?
@@ -47,14 +47,7 @@ function setupPTW(){
 		$(el).on('contextmenu', rightClickHandler);
 	});
 	magicExecutor();
-	let url = chrome.runtime.getURL('../../assets/ui/hello.wav');
-	let audioTag = 
-	`<audio id="ptwsound">
-	<source src="${url}" type="audio/wav" />
-	</audio>`;
-	let $body = $('body');
-	$body.prepend(audioTag);
-	$body[0].style.setProperty('--ptw-grab', 'grab');
+	$('body')[0].style.setProperty('--ptw-grab', 'grab');
 	
 }
 
@@ -89,27 +82,30 @@ window.onload = function() {
 		$('#home-headers-wrapper, #away-headers-wrapper').remove();
 	});
 	
-	if($('.z-10 .w-full div > span').text() === "LIVE"){
+	if($('.z-10 .w-full div:first-child .w-full .items-center > *:first-child').text() === "LIVE"){
+		let url = chrome.runtime.getURL('../../assets/ui/hello.wav');
+		let audioTag = `<audio id="ptwsound" preload="auto">
+							<source src="${url}" type="audio/wav" />
+						</audio>`;
+		$('body').prepend(audioTag);
 		isLiveGame = true;
 		startChangeDetector();
 		prevMillis = new Date().getTime();
 	}
 
-	$('body').on({
-		onload: function(){
-			//handle boxscore tab selected
-			let $boxscoreElem = $('#box-score');
-			$boxscoreElem.click(function(){ setTimeout(function(){ handleBoxscoreTab(); }, 0); });
-			
-			chrome.storage.sync.get(['blink','teamcolor'], function(val){
-				blinkOn = val.blink ?? false;
-				teamcolorOn = val.teamcolor ?? true;
-				if($boxscoreElem.parent().attr('aria-selected') === 'true'){
-					handleBoxscoreTab(); 
-				}		
-			});
-		}
-	}, '#box-score')
+	
+	//handle boxscore tab selected
+	let $boxscoreElem = $('#box-score');
+	$boxscoreElem.click(function(){ setTimeout(function(){ handleBoxscoreTab(); }, 0); });
+	
+	chrome.storage.sync.get(['blink','teamcolor'], function(val){
+		blinkOn = val.blink ?? false;
+		teamcolorOn = val.teamcolor ?? true;
+		if($boxscoreElem.parent().attr('aria-selected') === 'true'){
+			handleBoxscoreTab(); 
+		}		
+	});
+		
 };
 
 const COL_MAP = {
@@ -360,7 +356,7 @@ function handleBoxscoreTab() {
 function startChangeDetector() {
 	//TODO: identify ptw's table and narrow mut observers
 	let targetNodes = $('table td');
-	let gameStatusNode = $('.z-10 .w-full div > span')[0];// LIVE || FINAL
+	let gameStatusNode = $('.z-10 .w-full div:first-child .w-full .items-center > *:first-child')[0];// LIVE || FINAL
 	let MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 	let tableCellsObs = new MutationObserver(livePlusPtwMutationHandler);
 	let gameStatusObs = new MutationObserver(gameStatusMutationHandler);
@@ -714,7 +710,7 @@ function cssBatchExecutor(matrix, statCategoryArr, homeAwayIdentifier, classname
 		playerIndexesToHighlight = getMaxIndexesInCategory(matrix, COL_MAP[colTitle], homeAwayIdentifier);
 		cssExecutor(COL_MAP[colTitle], playerIndexesToHighlight, homeAwayIdentifier, classname, $table);
 		if(colTitle === '+/-'){
-			let lowlightIndexes = getMinIndexesInCategory(matrix, COL_MAP[colTitle]);
+			let lowlightIndexes = getMinIndexesInCategory(matrix, COL_MAP[colTitle], homeAwayIdentifier);
 			cssExecutor(COL_MAP[colTitle], lowlightIndexes, homeAwayIdentifier, BAD, $table);
 		}
 	}
@@ -733,17 +729,19 @@ function cssExecutor(column, playerIndexesArray, homeAwayIdentifier, classname, 
 	}
 }
 
-function getMinIndexesInCategory(matrix, col) {
+function getMinIndexesInCategory(matrix, col, homeAwayIdentifier) {
 	let statsArray = getCol(matrix, col);
+	let minutes = getMinsByTeam($($('table')[homeAwayIdentifier]));
 	let minArr = [];
 	let min = Math.min(...statsArray);
 	for(let i = 0 ; i < statsArray.length ; i++)
-		if (statsArray[i] === min)
+		if (statsArray[i] === min && minutes[i+1] !== '0.0')
 			minArr.push(i+1);
 	return minArr;
 }
 
 function getMaxIndexesInCategory(matrix, col, homeAwayIdentifier) {
+	//TODO: REWRITE use single for loop that deals with everything
 	let columnArray = getCol(matrix, col);
 	let maxArr = [];
 	let max = Math.max(...columnArray);
@@ -804,6 +802,7 @@ function fixHeaders(homeAwayIdentifier){
 			height: ${height};
 			padding-top: 15px;
 			background-color: ${bgColor};
+			user-select: none;
 			z-index: 20;
 		`;
 
