@@ -106,7 +106,7 @@ input#blink, input#teamcolor{
     display: block;
 }
 .blink::after{
-    content: 'Blink screen (flash) whenever the stats table refreshes';
+    content: 'Flash screen whenever the stats table refreshes';
 }
 .teamcolor::after{
     content: 'Color headers by team colors';
