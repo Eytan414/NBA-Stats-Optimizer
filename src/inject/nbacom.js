@@ -2,10 +2,10 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 	switch(message){
 		case 'ptw-on':
 			watchPlayer = true;
-			if(isLiveGame) setupPTW();
+			if(isLiveGame) 
+				setupPTW();
 			return true;
 		case 'ptw-off':
-			watchPlayer = false;
 			deactivatePtw();
 			return true;
 		case 'ptwGetSwitchStatus':
@@ -36,11 +36,14 @@ function updateTeamcolorPreference(){
 }
 
 function deactivatePtw(){ 
-	//TODO: implement logic bla bla
+	watchPlayer = false;
+	$('body')[0].style.setProperty('--ptw-grab', 'default');
+	$('#ptw').slideUp();
 }
 	
 
 function setupPTW(){
+	$('#ptw').slideDown();
 	$('table tbody tr td:nth-child(1)').each(function(i, el){ //add right click event on name columns
 		$(el).on('mousedown', mousedownHandler);
 		$(el).on('mouseup', mouseupHandler);
@@ -83,9 +86,9 @@ window.onload = function() {
 	});
 	
 	if($('.z-10 .w-full div:first-child .w-full .items-center > *:first-child').text() === "LIVE"){
-		let url = chrome.runtime.getURL('../../assets/ui/hello.wav');
+		let url = chrome.runtime.getURL('../../assets/ui/hello.mp3');
 		let audioTag = `<audio id="ptwsound" preload="auto">
-							<source src="${url}" type="audio/wav" />
+							<source src="${url}" type="audio/mp3"/>
 						</audio>`;
 		$('body').prepend(audioTag);
 		isLiveGame = true;
@@ -361,7 +364,7 @@ function startChangeDetector() {
 	let tableCellsObs = new MutationObserver(livePlusPtwMutationHandler);
 	let gameStatusObs = new MutationObserver(gameStatusMutationHandler);
 	let tableCellsConfig = { characterData: true, subtree: true};
-	let gameStatusConfig = { characterData: true, childList: true, subtree: true}; //TODO: test
+	let gameStatusConfig = { characterData: true, childList: true, subtree: true}; 
 
 	targetNodes.each(function() {
 		tableCellsObs.observe(this, tableCellsConfig);
