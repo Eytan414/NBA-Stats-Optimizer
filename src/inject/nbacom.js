@@ -13,14 +13,16 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 			return true;
 		default:
 			if(message.blink !== undefined)
-				updateBlink();
+				updateBlinkPreference();
 			if(message.teamcolor !== undefined)
 				updateTeamcolorPreference();
+			if(message.volume !== undefined)
+				updateVolumePreference();
 			return true;
 	}
 });
 	
-function updateBlink(){ 
+function updateBlinkPreference(){ 
 	chrome.storage.sync.get(['blink'], function(val){
 		blinkOn = val.blink;
 	});
@@ -34,16 +36,22 @@ function updateTeamcolorPreference(){
 			cleanHeadersByTeamsColors() ;
 	});
 }
+function updateVolumePreference(){ 
+	chrome.storage.sync.get(['volume'], function(val){
+		document.getElementById('ptwsound').volume = val.volume; 
+	});
+}
 
 function deactivatePtw(){ 
 	watchPlayer = false;
 	$('body')[0].style.setProperty('--ptw-grab', 'default');
-	$('#ptw').slideUp();
+	$('#ptw').hide();
+	$('.ptw').removeClass('ptw');
 }
 	
 
 function setupPTW(){
-	$('#ptw').slideDown();
+	$('#ptw').show();
 	$('table tbody tr td:nth-child(1)').each(function(i, el){ //add right click event on name columns
 		$(el).on('mousedown', mousedownHandler);
 		$(el).on('mouseup', mouseupHandler);
@@ -91,6 +99,12 @@ window.onload = function() {
 							<source src="${url}" type="audio/mp3"/>
 						</audio>`;
 		$('body').prepend(audioTag);
+		
+		let ptwsound = document.getElementById('ptwsound');
+		ptwsound.volume = 0.5;
+		ptwsound.muted = true;
+		ptwsound.play()
+		
 		isLiveGame = true;
 		startChangeDetector();
 		prevMillis = new Date().getTime();
@@ -357,14 +371,13 @@ function handleBoxscoreTab() {
 }
 
 function startChangeDetector() {
-	//TODO: identify ptw's table and narrow mut observers
-	let targetNodes = $('table td');
-	let gameStatusNode = $('.z-10 .w-full div:first-child .w-full .items-center > *:first-child')[0];// LIVE || FINAL
+	let targetNodes = $('table td:nth-child(2)');
+	let gameStatusNode = $('.z-10 .w-full div:first-child .w-full .items-center:first-child')[0];// LIVE || FINAL
 	let MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 	let tableCellsObs = new MutationObserver(livePlusPtwMutationHandler);
 	let gameStatusObs = new MutationObserver(gameStatusMutationHandler);
 	let tableCellsConfig = { characterData: true, subtree: true};
-	let gameStatusConfig = { characterData: true, childList: true, subtree: true}; 
+	let gameStatusConfig = { characterData: true, childList: true};
 
 	targetNodes.each(function() {
 		tableCellsObs.observe(this, tableCellsConfig);
@@ -373,7 +386,7 @@ function startChangeDetector() {
 }
 
 function gameStatusMutationHandler(mutationRecord) {
-	if(mutationRecord[0].target.textContent === 'FINAL'){
+	if(mutationRecord[0].target.textContent.toLowerCase() === 'final'){
 		let $ptw = $('#ptw');
 		$ptw.text($ptw.text() + ' | FINAL |');
 	}
@@ -381,7 +394,6 @@ function gameStatusMutationHandler(mutationRecord) {
 
 function livePlusPtwMutationHandler(mutationRecords) {
 	let millis = new Date().getTime();
-	// prevMillis ?? millis; shouldn't be necessary
 	if(millis - prevMillis < MIN_INTERVAL) return;
 	
 	bodyBlink();
@@ -392,7 +404,6 @@ function livePlusPtwMutationHandler(mutationRecords) {
 			let colIndex = $(mutationRecords[i].target.parentElement).index();
 			if(colIndex === 1) //min's played
 				minutesRecords.push(mutationRecords[i].target.parentElement);
-			//TODO: highlight entire player row when his statline updates
 		}
 		if(minutesRecords.length > 0) handlePlayerToWatch(minutesRecords);	
 	}
@@ -422,7 +433,9 @@ function updatePtwTracker(){
 }
 
 function playSound() {
-	document.getElementById('ptwsound').play(); 
+	let ptwsound = document.getElementById('ptwsound');
+	ptwsound.muted = false;
+	ptwsound.play(); 
 }
 
 function magicExecutor() {

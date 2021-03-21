@@ -9,7 +9,7 @@ body{
     background-color: #b8b8b8;
     border-radius: 10px;
     width: max-content;
-    padding: 10px 10px 50px;
+    padding: 10px 5px 40px;
     font-family: cursive, Roboto, sans-serif !important;
     box-shadow:  10px 10px 20px 3px #4c85e180,
                 -10px -10px 20px 10px #4c85e180;
@@ -63,8 +63,7 @@ h1, h2 {
 
 .global-settings .toggles{
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1.5fr;
 }
 .global-settings .toggles div{
     font-size: 16px;
@@ -73,7 +72,7 @@ h1, h2 {
     justify-self: start;
 }
 
-input#blink, input#teamcolor{
+input#blink, input#teamcolor, input#volume{
     background-image: url(../../assets/ui/toggle_off.png);
     background-size: contain;
     background-repeat: no-repeat;
@@ -82,9 +81,12 @@ input#blink, input#teamcolor{
     height: 20px;
     display: inline-block;
     align-self: center;
-    justify-self: center;
+    justify-self: start;
+    margin-left: 15px;
 }
-
+input#volume{
+    width: 50%;
+}
 .tooltip {
     display: inline-block;
     cursor: help;
@@ -96,7 +98,7 @@ input#blink, input#teamcolor{
     text-align: center;
     border-radius: 10px;
     border: 2px solid #5f87e6;
-    padding: 10px 5px;
+    padding: 5px;
     font-family: cursive;
     z-index:1;
     position: absolute;
@@ -110,4 +112,7 @@ input#blink, input#teamcolor{
 }
 .teamcolor::after{
     content: 'Color headers by team colors';
+}
+.volume::after{
+    content: 'Adjust player to watch notification\'s volume';
 }
