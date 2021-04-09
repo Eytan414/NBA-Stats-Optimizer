@@ -78,7 +78,7 @@ function placeLocalHours(){
 }
 
 function startChangeDetector() {
-	let targetNode = $('div.shadow-block .uppercase').parent();
+	let targetNode = $('.flex > button[data-type="date"]').parent();
 	let MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 	let obs = new MutationObserver((mutations)=> {
 		placeLocalHours();

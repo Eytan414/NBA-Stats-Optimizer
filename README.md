@@ -20,9 +20,12 @@ Hope you'll enjoy it!
 
 Changelog:
 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+➤ 1.3.3 + 1.3.4:
+    • |🛠️Fix| update local times due to nba.com team's change
+    • |🛠️Fix| update local times, when changing date due to nba.com team's change
+
 ➤ 1.3.2:
     • |🌟New| add player to watch volume control on popup
-    • |🛠️Fix| update local times due to nba.com team's change
     
 ➤ 1.3.1:
     • |📈Update| PTW indicates if game is over
