@@ -20,10 +20,17 @@ Hope you'll enjoy it!
 
 Changelog:
 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
+➤ 1.3.2:
+    • |🌟New| add player to watch volume control on popup
+    • |🛠️Fix| update local times due to nba.com team's change
+    
+➤ 1.3.1:
+    • |📈Update| PTW indicates if game is over
+
 ➤ 1.3.0:
-    • |🛠️CRITICAL Fix| adjust wizard to work on the updated nba.com 
+    • |🛠️Fix| adjust wizard to work on the updated nba.com 
       HTML hierarchy which broke several features
-    • |🌟New| Add Player To Watch (PTW) doorbell alert each time the 
+    •  Add Player To Watch (PTW) doorbell alert each time the 
       chosen player enters the game + adds minutes tracker fixed on top 
       left corner when enabled
     • |🌟New| Add extension popup with new features:

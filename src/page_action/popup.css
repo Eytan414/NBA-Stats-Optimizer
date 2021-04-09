@@ -1,6 +1,9 @@
 body{
     user-select: none;
 }
+*:focus{
+    outline: 0;
+}
 .container{
     background-image: url(../../assets/ui/wizard_color.png);
     background-size: 50px;

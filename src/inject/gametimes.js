@@ -11,7 +11,7 @@ function placeLocalHours(){
 	let estOffset = getTimeZoneOffset(new Date(), 'America/New_York');
 	let localOffset = new Date().getTimezoneOffset();
 	let offset = (estOffset - localOffset) / 60;
-	let gametimeArr = $('section > div.shadow-block > .flex a .items-center p.h9');
+	let gametimeArr = $('div.shadow-block > .flex a .items-center p.h9');
 
 	let gmtCalcdOffset = localOffset / -60; //convert to hours and change sign since returned offset is GMT-(returnedOffset)
 	let localTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -78,7 +78,7 @@ function placeLocalHours(){
 }
 
 function startChangeDetector() {
-	let targetNode = $('section > div.shadow-block').parent();
+	let targetNode = $('div.shadow-block .uppercase').parent();
 	let MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 	let obs = new MutationObserver((mutations)=> {
 		placeLocalHours();
