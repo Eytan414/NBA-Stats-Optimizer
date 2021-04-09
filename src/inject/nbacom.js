@@ -39,6 +39,7 @@ function updateTeamcolorPreference(){
 function updateVolumePreference(){ 
 	chrome.storage.sync.get(['volume'], function(val){
 		document.getElementById('ptwsound').volume = val.volume; 
+		globalPTWvolume = val.volume; 
 	});
 }
 
@@ -101,9 +102,13 @@ window.onload = function() {
 		$('body').prepend(audioTag);
 		
 		let ptwsound = document.getElementById('ptwsound');
-		ptwsound.volume = 0.5;
-		ptwsound.muted = true;
-		ptwsound.play()
+
+		chrome.storage.sync.get(['volume'], function(val){
+			globalPTWvolume = val.volume; 
+			ptwsound.volume = globalPTWvolume ?? 0.5; 
+			ptwsound.muted = true;
+			ptwsound.play()
+		});
 		
 		isLiveGame = true;
 		startChangeDetector();
@@ -112,7 +117,7 @@ window.onload = function() {
 
 	
 	//handle boxscore tab selected
-	let $boxscoreElem = $('#box-score');
+	let $boxscoreElem = $('#box-score'); //TODO: clear setTimeout
 	$boxscoreElem.click(function(){ setTimeout(function(){ handleBoxscoreTab(); }, 0); });
 	
 	chrome.storage.sync.get(['blink','teamcolor'], function(val){
@@ -318,6 +323,8 @@ let prevMillis;
 //userPreferences:
 let blinkOn;
 let teamcolorOn;
+let globalPTWvolume;
+
 
 function tableSrcChanged(){
 	let msg = $('body .msg');
@@ -890,6 +897,6 @@ function bodyBlink(){
 function cleanup(){
 	$('#home-headers-wrapper, #away-headers-wrapper').remove();
 	$('td, td a').each(function(){
-		$(this).removeClass('perfect best-in-category noteworthy best-in-team worst ice-cold big pct');
+		$(this).removeClass('perfect best-in-category noteworthy best-in-category worst ice-cold big pct');
 	});
 }
