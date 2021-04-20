@@ -1,18 +1,13 @@
-chrome.extension.sendMessage({}, function(response) {
-	var readyStateCheckInterval = setInterval(function() {
-	if (document.readyState === "complete") {
-		clearInterval(readyStateCheckInterval);
-		placeLocalHours();			
-		startChangeDetector();
-	}}, 10);
-});
+window.onload = function() {
+	placeLocalHours();			
+	startChangeDetector();
+}
 
 function placeLocalHours(){
 	let estOffset = getTimeZoneOffset(new Date(), 'America/New_York');
 	let localOffset = new Date().getTimezoneOffset();
 	let offset = (estOffset - localOffset) / 60;
 	let gametimeArr = $('div.shadow-block > .flex a .items-center p.h9');
-
 	let gmtCalcdOffset = localOffset / -60; //convert to hours and change sign since returned offset is GMT-(returnedOffset)
 	let localTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
 	let tooltipText = "Localized time of game in: " + localTZ + " | GMT";
@@ -30,7 +25,7 @@ function placeLocalHours(){
 		hour = +hour + 12;
 		let localHour = (hour + offset) % 24;
 		localHour = (localHour+'').padStart(2, '0');
-		let url = chrome.runtime.getURL('../../assets/ui/wizard_color.png');
+		let url = chrome.runtime.getURL('assets/ui/wizard_color.png');
 
 		let html = `
 			<div class='local-hour'>(${localHour}:${mins})
@@ -77,8 +72,8 @@ function placeLocalHours(){
 	$('head').append(css);
 }
 
-function startChangeDetector() {
-	let targetNode = $('.flex > button[data-type="date"]').parent();
+function startChangeDetector() {	
+	let targetNode = $('div.shadow-block').parent();
 	let MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 	let obs = new MutationObserver((mutations)=> {
 		placeLocalHours();
