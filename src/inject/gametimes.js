@@ -74,6 +74,10 @@ function placeLocalHours(){
 
 function startChangeDetector() {	
 	let targetNode = $('div.shadow-block').parent();
+	
+	// $(targetNode).click(function(i, el){
+	// 	placeLocalHours();
+	// });
 	let MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 	let obs = new MutationObserver((mutations)=> {
 		placeLocalHours();

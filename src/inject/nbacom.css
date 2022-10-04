@@ -35,8 +35,8 @@ a.text-cerulean {
     color: var(--font-color);
 	text-decoration: underline;
 }
-
-.fixed > div:nth-of-type(3) {
+#__next > div:nth-child(2) > div:first-child > div:nth-child(4),
+#__next > div:nth-child(2) > div:first-child > div:nth-child(3) {
 	display:none;
 }
 

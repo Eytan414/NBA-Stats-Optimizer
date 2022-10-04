@@ -21,7 +21,9 @@ chrome.runtime.onMessage.addListener(function(message,sender,sendResponse){
 			return true;
 	}
 });
-	
+
+const GAME_STATUS_SELECTOR = '[class^="GameHeroBackground_content"] [class^="LiveBadge"]';
+
 function updateBlinkPreference(){ 
 	chrome.storage.sync.get(['blink'], function(val){
 		blinkOn = val.blink;
@@ -48,6 +50,7 @@ function deactivatePtw(){
 	$('body')[0].style.setProperty('--ptw-grab', 'default');
 	$('#ptw').hide();
 	$('.ptw').removeClass('ptw');
+	$(el).off('mousedown', mousedownHandler);
 }
 	
 
@@ -94,7 +97,8 @@ window.onload = function() {
 		$('#home-headers-wrapper, #away-headers-wrapper').remove();
 	});
 	
-	if($('.z-10 .w-full div:first-child .w-full .items-center > *:first-child').text() === "LIVE"){
+	if($(GAME_STATUS_SELECTOR).text() === "LIVE"){
+		
 		let url = chrome.runtime.getURL('../../assets/ui/hello.mp3');
 		let audioTag = `<audio id="ptwsound" preload="auto">
 							<source src="${url}" type="audio/mp3"/>
@@ -376,10 +380,9 @@ function handleBoxscoreTab() {
 	colorHeadersByTeamsColors();
 	magicExecutor();
 }
-
 function startChangeDetector() {
 	let targetNodes = $('table td:nth-child(2)');
-	let gameStatusNode = $('.z-10 .w-full div:first-child .w-full .items-center:first-child')[0];// LIVE || FINAL
+	let gameStatusNode = $(GAME_STATUS_SELECTOR)[0];// LIVE || ''
 	let MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 	let tableCellsObs = new MutationObserver(livePlusPtwMutationHandler);
 	let gameStatusObs = new MutationObserver(gameStatusMutationHandler);
@@ -514,7 +517,7 @@ function implHighlight() {
 function colorHeadersByTeamsColors() {
 	if(!teamcolorOn) return;
 	let [awayTable, homeTable] = $('table');
-	let [awayTeam, homeTeam] = $('h1 span');
+	let [awayTeam, homeTeam] = $('h2 div');
 	awayTeam = $(awayTeam).text();
 	homeTeam = $(homeTeam).text();
 

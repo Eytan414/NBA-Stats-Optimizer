@@ -20,9 +20,17 @@ Hope you'll enjoy it!
 
 Changelog:
 ‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾
-➤ 1.3.3 + 1.3.4:
+➤ 1.3.7:
+  • |🛠️Fix| wizard didn't recognize live games which caused "player to watch" feature to break as well, I hadn't watched much live games this season so 
+    can't really tell how long it was broken 😇
+
+➤ 1.3.6:
+	• |🛠️Fix| hide live scoreboard on top of the page (to enable more of the table to be seen in order to minimize the need for scrolling while viewing/
+    analyzing boxscore), again due to changes by "nba.com" web developers 😅
+	
+➤ 1.3.3 + 1.3.4 + 1.3.5:
     • |🛠️Fix| update local times due to nba.com team's change
-    • |🛠️Fix| update local times, when changing date due to nba.com team's change
+    • |🛠️Fix| update local times, when changing date due to changes by "nba.com" web developers
 
 ➤ 1.3.2:
     • |🌟New| add player to watch volume control on popup
