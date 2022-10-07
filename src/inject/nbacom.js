@@ -146,7 +146,11 @@ const COL_MAP = {
 	'PF'  : '16',	'PTS' : '17',
 	'+/-' : '18'};
 
-const TEAM_COLORS_MAP = [
+const TEAM_COLORS_MAP = [	{
+	'fullName': 'unknown',
+	'mainColor': '#000',
+	'secondaryColor': '#fff'
+	},
 	{
 		'fullName': 'Atlanta Hawks',
 		'mainColor': '#c8102e',
@@ -524,9 +528,11 @@ function colorHeadersByTeamsColors() {
 	let homeObj = TEAM_COLORS_MAP.filter(team =>{
 		return team.fullName.toLowerCase() === homeTeam.toLowerCase();		
 	});
+	if(homeObj.length === 0) homeObj = 'unknown';
 	let awayObj = TEAM_COLORS_MAP.filter(team =>{
 		return team.fullName.toLowerCase() === awayTeam.toLowerCase();		
 	});
+	if(awayObj.length === 0) awayObj = 'unknown';
 	
 	let aMainColor = awayObj[0].mainColor;
 	let aSecColor  = awayObj[0].secondaryColor;
