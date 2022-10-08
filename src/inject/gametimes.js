@@ -1,13 +1,27 @@
+// window.onload = function() {
+// 	placeLocalHours();			
+// 	startChangeDetector();
+// }
+let didAddCss = false;
 window.onload = function() {
-	placeLocalHours();			
-	startChangeDetector();
-}
+	$(DATE_SELECTOR).each(function(i,el){
+		//TODO: replace w change detector
+		$(el).on('click', function(){
+			setTimeout(function(){
+				placeLocalHours();
+			},750);
+		});
+  	});
 
+	placeLocalHours();			
+}
+const DATE_SELECTOR = '[class^="DatePickerWeek_weekBar"] button';
+const GAME_TIME_SELECTOR = '[class^="GameCardMatchupStatusText_gcsText"]';
 function placeLocalHours(){
 	let estOffset = getTimeZoneOffset(new Date(), 'America/New_York');
 	let localOffset = new Date().getTimezoneOffset();
 	let offset = (estOffset - localOffset) / 60;
-	let gametimeArr = $('div.shadow-block > .flex a .items-center p.h9');
+	let gametimeArr = $(GAME_TIME_SELECTOR);
 	let gmtCalcdOffset = localOffset / -60; //convert to hours and change sign since returned offset is GMT-(returnedOffset)
 	let localTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
 	let tooltipText = "Localized time of game in: " + localTZ + " | GMT";
@@ -15,10 +29,11 @@ function placeLocalHours(){
 	
 	$(gametimeArr).each(function(i, el){
 		const $el = $(el);
-		//ignore live and postponed games
-		if($el.hasClass('relative')) return;
-		if($el.text() === 'PPD') return;
-		
+		//ignore marked, live and postponed games
+		if($el.siblings('.local-hour').length > 0) return;
+		if($el.text().indexOf(':') === -1) return;
+		if(!$el.text().includes('ET')) return;
+
 		let mins = $el.text().split(':')[1];
 		mins = mins.split(' ')[0];
 		let hour = $el.text().split(':')[0];
@@ -37,10 +52,11 @@ function placeLocalHours(){
 		$(html).insertBefore($el);
 	});
 
-	let css = `<style>
+	const css = `<style>
 	.local-hour {
 		display:inline-block;
 		cursor:help;
+		margin-bottom: 0.5rem;
 		border-bottom: 2px dotted #0268d6;
 	}
 	.local-hour img{
@@ -69,15 +85,14 @@ function placeLocalHours(){
 		display: block;
 	}
 	</style>`;
-	$('head').append(css);
-}
+	if(!didAddCss){
+		$('head').append(css);
+		didAddCss = true;
+	} }
 
 function startChangeDetector() {	
 	let targetNode = $('div.shadow-block').parent();
 	
-	// $(targetNode).click(function(i, el){
-	// 	placeLocalHours();
-	// });
 	let MutationObserver = window.MutationObserver || window.WebKitMutationObserver;
 	let obs = new MutationObserver((mutations)=> {
 		placeLocalHours();
