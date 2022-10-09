@@ -50,7 +50,11 @@ function deactivatePtw(){
 	$('body')[0].style.setProperty('--ptw-grab', 'default');
 	$('#ptw').hide();
 	$('.ptw').removeClass('ptw');
-	$(el).off('mousedown', mousedownHandler);
+	$('table tbody tr td:nth-child(1)').each(function(i, el){ //add right click event on name columns
+		$(el).off('mousedown', mousedownHandler);
+		$(el).off('mouseup', mouseupHandler);
+		$(el).off('contextmenu', rightClickHandler);
+	});
 }
 	
 
@@ -534,19 +538,21 @@ function colorHeadersByTeamsColors() {
 	});
 	if(awayObj.length === 0) awayObj = 'unknown';
 	
-	let aMainColor = awayObj[0].mainColor;
-	let aSecColor  = awayObj[0].secondaryColor;
-	let hMainColor = homeObj[0].mainColor;
-	let hSecColor  = homeObj[0].secondaryColor;
+	const aMainColor = awayObj[0].mainColor;
+	const aSecColor  = awayObj[0].secondaryColor;
+	const hMainColor = homeObj[0].mainColor;
+	const hSecColor  = homeObj[0].secondaryColor;
 	
-	let awayBGVal = 'linear-gradient(230deg,' + aSecColor+'80' + ' 50%, ' + aMainColor+'80' + ' 85%)';
-	let homeBgVal = 'linear-gradient(230deg,' + hSecColor+'80' + ' 50%, ' + hMainColor+'80' + ' 85%)';
-	let awayTitleBGVal = 'linear-gradient(230deg,' + aSecColor+'cd' + ' 50%, ' + aMainColor+'cd' + ' 85%)';
-	let homeTitleBgVal = 'linear-gradient(230deg,' + hSecColor+'cd' + ' 50%, ' + hMainColor+'cd' + ' 85%)';
-
-	let offset = $('#__next > div:nth-child(2) .p-0 section').length === 2 ? 0 : 1; //finished games has additional section
-	$('#__next > div:nth-child(2) .p-0 section:nth-child(' + (offset+1) +') > div:first-child').css('background', awayTitleBGVal);
-	$('#__next > div:nth-child(2) .p-0 section:nth-child(' + (offset+2) +') > div:first-child').css('background', homeTitleBgVal);
+	const awayBGVal = 'linear-gradient(230deg,' + aSecColor+'80' + ' 50%, ' + aMainColor+'80' + ' 85%)';
+	const homeBgVal = 'linear-gradient(230deg,' + hSecColor+'80' + ' 50%, ' + hMainColor+'80' + ' 85%)';
+	const awayTitleBGVal = 'linear-gradient(230deg,' + aSecColor+'cd' + ' 50%, ' + aMainColor+'cd' + ' 85%)';
+	const homeTitleBgVal = 'linear-gradient(230deg,' + hSecColor+'cd' + ' 50%, ' + hMainColor+'cd' + ' 85%)';
+	
+	const [away, home] = $('[class^="GameBoxscore_gbTableSection"] > div:first-child');
+	//color title
+	$(away).css('background', awayTitleBGVal);
+	$(home).css('background', homeTitleBgVal);
+	
 	//color players
 	$(awayTable).find('tbody tr').each(function (i, el) { 
 		$(el).find('td').each(function (i, el) { 
