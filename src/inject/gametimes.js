@@ -18,15 +18,18 @@ window.onload = function() {
 const DATE_SELECTOR = '[class^="DatePickerWeek_weekBar"] button';
 const GAME_TIME_SELECTOR = '[class^="GameCardMatchupStatusText_gcsText"]';
 function placeLocalHours(){
-	let estOffset = getTimeZoneOffset(new Date(), 'America/New_York');
-	let localOffset = new Date().getTimezoneOffset();
-	let offset = (estOffset - localOffset) / 60;
-	let gametimeArr = $(GAME_TIME_SELECTOR);
-	let gmtCalcdOffset = localOffset / -60; //convert to hours and change sign since returned offset is GMT-(returnedOffset)
-	let localTZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
-	let tooltipText = "Localized time of game in: " + localTZ + " | GMT";
-	tooltipText += gmtCalcdOffset > 0 ? '+'+gmtCalcdOffset : '-'+gmtCalcdOffset;
+	let est = new Date().toLocaleString("en-UK", {timeZone: "US/Eastern"});
+	let gmt = new Date().toLocaleString("en-UK", {timeZone: "UTC"});
 	
+	let localOffset = new Date().getTimezoneOffset();
+	let gmtCalcdOffset = localOffset / -60; //convert to hours and change sign since returned offset is GMT-(returnedOffset)
+	let offset = getTimeZonesDifference(gmt, est) + gmtCalcdOffset;
+	let localTZstring = Intl.DateTimeFormat().resolvedOptions().timeZone;
+	let tooltipText = 
+		`Localized time of game in: 
+			${localTZstring} | GMT${(gmtCalcdOffset > 0 ? '+' : '-')}${gmtCalcdOffset}`;
+	
+	let gametimeArr = $(GAME_TIME_SELECTOR);
 	$(gametimeArr).each(function(i, el){
 		const $el = $(el);
 		//ignore marked, live and postponed games
@@ -90,6 +93,35 @@ function placeLocalHours(){
 		didAddCss = true;
 	} }
 
+function getTimeZonesDifference(date1, date2) {
+	let earlier = 'na';
+	if(date1.split(',')[0] !== date2.split(',')[0]){
+		let [day1, month1, year1] = date1.split(',')[0].split('/');
+		let [day2, month2, year2] = date2.split(',')[0].split('/');
+		if(year1 > year2)
+			earlier = date2;
+		else if(year2 > year1)
+			earlier = date1;
+		else if(month1 > month2)
+			earlier = date2; 
+		else if(month2 > month1)
+			earlier = date1;
+		else if(day1 > day2)
+			earlier = date2;
+		else if(day2 > day1)
+			earlier = date1;
+	}
+	let h1 = date1.split(',')[1].trim().split(':')[0];
+	let h2 = date2.split(',')[1].trim().split(':')[0];
+	
+	if(earlier === 'na') return Math.abs(h1-h2);
+
+	if(date1 === earlier) h2 = +h2 + 24;
+	if(date2 === earlier) h1 = +h1 + 24;		
+	return Math.abs(h1-h2);
+}
+
+/* 
 function startChangeDetector() {	
 	let targetNode = $('div.shadow-block').parent();
 	
@@ -106,7 +138,7 @@ function getTimeZoneOffset(date, timeZone) {
 	iso += '.' + date.getMilliseconds().toString().padStart(3, '0');
 	//handle case iso hour is midnight
 	if(iso.split('T')[1].startsWith('24'))
-		iso.replace('T24','T00');
+		iso = iso.replace('T24','T00');
 	const tmp = new Date(iso + 'Z');
 	return -(tmp - date) / 60 / 1000;
-  }
+  } */
